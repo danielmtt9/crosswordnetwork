@@ -34,3 +34,42 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Super Admin System
+
+This application includes a super admin system for managing user roles and permissions.
+
+### Super Admin Email
+- **Email**: `superadmin@crossword.network`
+- **Role**: Only this email can promote users to ADMIN role
+- **Protection**: Cannot be demoted or deleted by other admins
+
+### Creating the Super Admin Account
+
+Use the provided script to create the super admin account:
+
+```bash
+node scripts/create-super-admin.js <password>
+```
+
+Replace `<password>` with a secure password for the super admin account.
+
+### Super Admin Privileges
+
+1. **Admin Promotion**: Only the super admin can promote users to ADMIN role
+2. **Account Protection**: Super admin account cannot be modified by regular admins
+3. **Full Access**: Super admin has all regular admin privileges plus the above
+
+### Security Considerations
+
+- Super admin email is hardcoded for security (cannot be changed through UI)
+- Only way to change super admin is through direct database access
+- All attempts to modify super admin are logged in audit trail
+- Super admin privileges are checked on both frontend and backend
+
+### Admin Dashboard Access
+
+1. Sign in with the super admin account
+2. Navigate to `/admin` to access the admin dashboard
+3. Use the "Manage Users" section to promote users to admin role
+4. Regular admins will see restricted options when trying to modify the super admin account

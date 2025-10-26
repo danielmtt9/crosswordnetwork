@@ -1,0 +1,427 @@
+/* EclipseCrossword Custom Theme - Crossword Network Integration */
+
+/* ===== CSS Variables for Theme Compatibility ===== */
+:root {
+  /* Light mode colors */
+  --ecw-background: hsl(0 0% 100%);
+  --ecw-foreground: hsl(222.2 84% 4.9%);
+  --ecw-card: hsl(0 0% 100%);
+  --ecw-card-foreground: hsl(222.2 84% 4.9%);
+  --ecw-border: hsl(214.3 31.8% 91.4%);
+  --ecw-primary: hsl(142.1 76.2% 36.3%); /* Green instead of blue */
+  --ecw-primary-foreground: hsl(355.7 100% 97.3%);
+  --ecw-secondary: hsl(210 40% 96.1%);
+  --ecw-secondary-foreground: hsl(222.2 84% 4.9%);
+  --ecw-accent: hsl(142.1 70.6% 95.3%); /* Light green accent */
+  --ecw-accent-foreground: hsl(222.2 84% 4.9%);
+  --ecw-muted: hsl(210 40% 96.1%);
+  --ecw-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --ecw-destructive: hsl(0 84.2% 60.2%);
+  --ecw-destructive-foreground: hsl(210 40% 98%);
+  --ecw-success: hsl(142.1 76.2% 36.3%);
+  --ecw-success-foreground: hsl(355.7 100% 97.3%);
+  --ecw-warning: hsl(38 92% 50%);
+  --ecw-warning-foreground: hsl(222.2 84% 4.9%);
+  
+  /* Typography */
+  --ecw-font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --ecw-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  
+  /* Spacing and sizing */
+  --ecw-border-radius: 0.5rem;
+  --ecw-border-radius-lg: 0.75rem;
+  --ecw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --ecw-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ecw-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* Dynamic cell sizing - will be overridden by JavaScript */
+  --ecw-cell-size: 32px;
+  --ecw-cell-font-size: 18px;
+  --ecw-grid-gap: 1px;
+}
+
+/* Dark mode colors */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ecw-background: hsl(222.2 84% 4.9%);
+    --ecw-foreground: hsl(210 40% 98%);
+    --ecw-card: hsl(222.2 84% 4.9%);
+    --ecw-card-foreground: hsl(210 40% 98%);
+    --ecw-border: hsl(217.2 32.6% 17.5%);
+    --ecw-primary: hsl(142.1 70.6% 45.3%); /* Brighter green for dark mode */
+    --ecw-primary-foreground: hsl(222.2 84% 4.9%);
+    --ecw-secondary: hsl(217.2 32.6% 17.5%);
+    --ecw-secondary-foreground: hsl(210 40% 98%);
+    --ecw-accent: hsl(142.1 70.6% 15.3%); /* Dark green accent for dark mode */
+    --ecw-accent-foreground: hsl(210 40% 98%);
+    --ecw-muted: hsl(217.2 32.6% 17.5%);
+    --ecw-muted-foreground: hsl(215 20.2% 65.1%);
+    --ecw-destructive: hsl(0 62.8% 30.6%);
+    --ecw-destructive-foreground: hsl(210 40% 98%);
+    --ecw-success: hsl(142.1 70.6% 45.3%);
+    --ecw-success-foreground: hsl(144.9 80.4% 10%);
+    --ecw-warning: hsl(38 92% 50%);
+    --ecw-warning-foreground: hsl(222.2 84% 4.9%);
+  }
+}
+
+/* ===== Base Styling Overrides ===== */
+
+/* Body and typography */
+body {
+  font-family: var(--ecw-font-family) !important;
+  background-color: var(--ecw-background) !important;
+  color: var(--ecw-foreground) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ecw-foreground) !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+/* ===== Crossword Container ===== */
+.ecw-crosswordarea {
+  background-color: var(--ecw-card) !important;
+  border: 2px solid var(--ecw-border) !important;
+  border-radius: var(--ecw-border-radius-lg) !important;
+  padding: 1rem !important;
+  font-family: var(--ecw-font-family) !important;
+  font-size: 14px !important;
+  box-shadow: var(--ecw-shadow-md) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Make crossword table responsive */
+#crossword {
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 auto;
+}
+
+.ecw-crosswordarea:hover {
+  box-shadow: var(--ecw-shadow-lg) !important;
+}
+
+/* ===== Grid Cells ===== */
+.ecw-box {
+  border: 1px solid var(--ecw-border) !important;
+  background-color: var(--ecw-background) !important;
+  color: var(--ecw-foreground) !important;
+  font-family: var(--ecw-font-mono) !important;
+  font-size: var(--ecw-cell-font-size) !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  height: var(--ecw-cell-size) !important;
+  width: var(--ecw-cell-size) !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  border-radius: 2px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Normal state - unselected */
+.ecw-boxnormal_unsel {
+  background-color: var(--ecw-background) !important;
+  border-color: var(--ecw-border) !important;
+  color: var(--ecw-foreground) !important;
+}
+
+.ecw-boxnormal_unsel:hover {
+  background-color: var(--ecw-accent) !important;
+  border-color: var(--ecw-primary) !important;
+}
+
+/* Normal state - selected */
+.ecw-boxnormal_sel {
+  background-color: var(--ecw-accent) !important;
+  border-color: var(--ecw-primary) !important;
+  color: var(--ecw-foreground) !important;
+  box-shadow: 0 0 0 2px var(--ecw-primary) !important;
+}
+
+/* Error state - unselected */
+.ecw-boxerror_unsel {
+  background-color: hsl(0 84.2% 60.2% / 0.1) !important;
+  border-color: var(--ecw-destructive) !important;
+  color: var(--ecw-destructive) !important;
+}
+
+/* Error state - selected */
+.ecw-boxerror_sel {
+  background-color: hsl(0 84.2% 60.2% / 0.2) !important;
+  border-color: var(--ecw-destructive) !important;
+  color: var(--ecw-destructive) !important;
+  box-shadow: 0 0 0 2px var(--ecw-destructive) !important;
+}
+
+/* Cheated state - unselected */
+.ecw-boxcheated_unsel {
+  background-color: var(--ecw-warning-foreground) !important;
+  border-color: var(--ecw-warning) !important;
+  color: var(--ecw-warning) !important;
+}
+
+/* Cheated state - selected */
+.ecw-boxcheated_sel {
+  background-color: var(--ecw-warning-foreground) !important;
+  border-color: var(--ecw-warning) !important;
+  color: var(--ecw-warning) !important;
+  box-shadow: 0 0 0 2px var(--ecw-warning) !important;
+}
+
+/* ===== Answer Box and Clues ===== */
+.ecw-answerbox {
+  background-color: var(--ecw-card) !important;
+  border: 1px solid var(--ecw-border) !important;
+  border-radius: var(--ecw-border-radius-lg) !important;
+  padding: 1rem !important;
+  box-shadow: var(--ecw-shadow-md) !important;
+  color: var(--ecw-card-foreground) !important;
+  font-family: var(--ecw-font-family) !important;
+  width: 280px !important;
+  transition: all 0.2s ease !important;
+}
+
+.ecw-answerbox:hover {
+  box-shadow: var(--ecw-shadow-lg) !important;
+}
+
+.ecw-cluebox {
+  border-top: 1px solid var(--ecw-border) !important;
+  border-bottom: 1px solid var(--ecw-border) !important;
+  border-left: none !important;
+  border-right: none !important;
+  margin-top: 1rem !important;
+  padding: 0.5rem 0 !important;
+  color: var(--ecw-foreground) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.ecw-wordlabel {
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  color: var(--ecw-primary) !important;
+  letter-spacing: 0.05em !important;
+}
+
+.ecw-wordinfo {
+  font-size: 12px !important;
+  color: var(--ecw-muted-foreground) !important;
+  margin: 0.25rem 0 !important;
+}
+
+.ecw-worderror {
+  color: var(--ecw-destructive) !important;
+  font-weight: 600 !important;
+  display: none !important;
+  margin-top: 1rem !important;
+  padding: 0.5rem !important;
+  background-color: hsl(0 84.2% 60.2% / 0.1) !important;
+  border-radius: var(--ecw-border-radius) !important;
+  border: 1px solid var(--ecw-destructive) !important;
+}
+
+/* ===== Input Field ===== */
+.ecw-input {
+  font-family: var(--ecw-font-family) !important;
+  background-color: var(--ecw-background) !important;
+  border: 1px solid var(--ecw-border) !important;
+  border-radius: var(--ecw-border-radius) !important;
+  color: var(--ecw-foreground) !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  transition: all 0.15s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.ecw-input:focus {
+  outline: none !important;
+  border-color: var(--ecw-primary) !important;
+  box-shadow: 0 0 0 2px hsl(142.1 76.2% 36.3% / 0.2) !important;
+}
+
+.ecw-input::placeholder {
+  color: var(--ecw-muted-foreground) !important;
+  text-transform: none !important;
+  font-weight: 400 !important;
+}
+
+/* ===== Buttons ===== */
+.ecw-button {
+  background-color: var(--ecw-primary) !important;
+  color: var(--ecw-primary-foreground) !important;
+  border: 1px solid var(--ecw-primary) !important;
+  border-radius: var(--ecw-border-radius) !important;
+  padding: 0.5rem 1rem !important;
+  font-family: var(--ecw-font-family) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  width: 64pt !important;
+  min-width: 80px !important;
+  text-align: center !important;
+}
+
+.ecw-button:hover {
+  background-color: hsl(142.1 76.2% 36.3% / 0.9) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--ecw-shadow) !important;
+}
+
+.ecw-button:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+.ecw-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* ===== Copyright ===== */
+.ecw-copyright {
+  margin-bottom: 1rem !important;
+  font-size: 11px !important;
+  font-family: var(--ecw-font-family) !important;
+  color: var(--ecw-muted-foreground) !important;
+}
+
+.ecw-copyright a {
+  color: var(--ecw-primary) !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+.ecw-copyright a:hover {
+  text-decoration: underline !important;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .ecw-answerbox {
+    width: 100% !important;
+    max-width: 320px !important;
+  }
+  
+  .ecw-box {
+    height: calc(var(--ecw-cell-size) * 0.8) !important;
+    width: calc(var(--ecw-cell-size) * 0.8) !important;
+    font-size: calc(var(--ecw-cell-font-size) * 0.8) !important;
+  }
+  
+  .ecw-crosswordarea {
+    padding: 0.75rem !important;
+  }
+  
+  .ecw-button {
+    width: auto !important;
+    min-width: 70px !important;
+    padding: 0.4rem 0.8rem !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ===== Animation Enhancements ===== */
+@keyframes ecw-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ecw-answerbox {
+  animation: ecw-fadeIn 0.3s ease-out !important;
+}
+
+.ecw-box {
+  animation: ecw-fadeIn 0.2s ease-out !important;
+}
+
+/* ===== Focus States for Accessibility ===== */
+.ecw-box:focus-visible {
+  outline: 2px solid var(--ecw-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.ecw-button:focus-visible {
+  outline: 2px solid var(--ecw-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.ecw-input:focus-visible {
+  outline: 2px solid var(--ecw-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* ===== Letter Validation Animations ===== */
+@keyframes pulse-correct {
+  0%, 100% { 
+    background-color: transparent; 
+    border-color: var(--ecw-border);
+  }
+  50% { 
+    background-color: rgba(34, 197, 94, 0.2); 
+    border-color: rgb(34, 197, 94);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+  }
+}
+
+@keyframes shake-incorrect {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
+}
+
+@keyframes glow-border {
+  0%, 100% { border-color: var(--ecw-border); }
+  50% { border-color: rgb(239, 68, 68); }
+}
+
+/* Correct letter animation */
+.ecw-letter-correct {
+  animation: pulse-correct 0.6s ease-in-out;
+}
+
+/* Incorrect letter animation */
+.ecw-letter-incorrect {
+  animation: shake-incorrect 0.4s ease-in-out, glow-border 0.4s ease-in-out;
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Struggling indicator (3+ errors) */
+.ecw-cell-struggling {
+  border-left: 3px solid rgb(251, 191, 36) !important;
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  .ecw-crosswordarea {
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+  }
+  
+  .ecw-answerbox {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+  
+  .ecw-box {
+    border: 1px solid #000 !important;
+  }
+}
