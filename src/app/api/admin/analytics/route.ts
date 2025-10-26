@@ -52,17 +52,22 @@ export async function GET(request: NextRequest) {
 
     // Get performance metrics
     const totalUsers = await prisma.user.count();
-    const activeUsers = await prisma.user.count({
+    // Count users who have been active (have user progress records) in the time range
+    const activeUserIds = await prisma.userProgress.findMany({
       where: {
-        lastActiveAt: {
+        lastPlayedAt: {
           gte: startDate
         }
-      }
+      },
+      select: {
+        userId: true
+      },
+      distinct: ['userId']
     });
+    const activeUsers = activeUserIds.length;
 
     const achievementUnlocks = await prisma.userAchievement.count({
       where: {
-        earned: true,
         earnedAt: {
           gte: startDate
         }

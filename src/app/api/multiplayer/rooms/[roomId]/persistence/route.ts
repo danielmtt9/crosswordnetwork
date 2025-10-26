@@ -2,7 +2,7 @@
  * API endpoints for room persistence management
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/lib/auth';
 import { 
   getRoomPersistenceSettings, 
@@ -13,17 +13,18 @@ import {
 } from '@/lib/roomPersistence';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
-  try {
+  const { roomId } = await params;
+try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     const { roomId } = params;
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const includeAnalytics = searchParams.get('includeAnalytics') === 'true';
 
     // Check if user is host
@@ -68,10 +69,11 @@ export async function GET(
 }
 
 export async function PATCH(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
-  try {
+  const { roomId } = await params;
+try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -117,10 +119,11 @@ export async function PATCH(
 }
 
 export async function POST(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
-  try {
+  const { roomId } = await params;
+try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });

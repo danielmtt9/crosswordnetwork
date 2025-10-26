@@ -6,8 +6,9 @@ import { AdminProvisioningManager } from '@/lib/adminProvisioning';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { requestId: string } }
+  { params }: { params: Promise<{ requestId: string }> }
 ) {
+  const { requestId } = await params; {
   try {
     const session = await getServerSession(authOptions);
     

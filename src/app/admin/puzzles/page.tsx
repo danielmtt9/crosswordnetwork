@@ -246,7 +246,7 @@ export default function AdminPuzzlesPage() {
   // Tag management functions
   const handleEditTags = (puzzle: PuzzleData) => {
     setEditingTags(puzzle.id);
-    setSelectedTags(parseTags(puzzle.tags));
+    setSelectedTags(parseTags(puzzle.tags || ''));
   };
 
   const handleSaveTags = async (puzzleId: number) => {
@@ -589,9 +589,9 @@ export default function AdminPuzzlesPage() {
                         {/* Tags Display */}
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs text-muted-foreground">Tags:</span>
-                          {parseTags(puzzle.tags).length > 0 ? (
+                          {parseTags(puzzle.tags || '').length > 0 ? (
                             <div className="flex flex-wrap gap-1">
-                              {parseTags(puzzle.tags).map((tag) => (
+                              {parseTags(puzzle.tags || '').map((tag) => (
                                 <Badge key={tag} className={`text-xs ${getTagColor(tag)}`}>
                                   {getTagDisplayName(tag)}
                                 </Badge>

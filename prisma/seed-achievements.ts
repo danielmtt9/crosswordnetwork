@@ -198,8 +198,16 @@ async function seedAchievements() {
   for (const achievement of achievements) {
     await prisma.achievement.upsert({
       where: { key: achievement.key },
-      update: achievement,
-      create: achievement,
+      update: {
+        ...achievement,
+        category: achievement.category as any,
+        tier: achievement.tier as any,
+      },
+      create: {
+        ...achievement,
+        category: achievement.category as any,
+        tier: achievement.tier as any,
+      },
     });
   }
   

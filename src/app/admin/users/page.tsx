@@ -100,7 +100,17 @@ export default function AdminUsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = isSuperAdmin(currentUserEmail);
+  const [isCurrentUserSuperAdmin, setIsCurrentUserSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkSuperAdminStatus = async () => {
+      if (currentUserEmail) {
+        const isSuper = await isSuperAdmin(currentUserEmail);
+        setIsCurrentUserSuperAdmin(isSuper);
+      }
+    };
+    checkSuperAdminStatus();
+  }, [currentUserEmail]);
 
   const fetchUsers = async () => {
     try {

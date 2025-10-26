@@ -78,7 +78,7 @@ export default function FeatureFlagsPage() {
   const [toggling, setToggling] = useState<string | null>(null);
 
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = isSuperAdmin(currentUserEmail);
+  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
 
   // Form state for creating new flags
   const [newFlag, setNewFlag] = useState({

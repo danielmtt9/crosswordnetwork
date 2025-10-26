@@ -2,14 +2,15 @@
  * API endpoints for room state backup automation
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {
@@ -45,9 +46,10 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {

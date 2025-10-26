@@ -8,9 +8,10 @@ import { db } from '@/lib/db';
 import { getRoomAnalytics } from '@/lib/roomPersistence';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { roomId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params; {
   try {
     const session = await getAuthSession();
     if (!session?.user) {

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../../auth/[...nextauth]/route';
-import { prisma } from '../../../../../../lib/prisma';
-import { RoomPermissionManager } from '../../../../../../lib/roomPermissions';
-import { SpectatorPermissionManager } from '../../../../../../lib/spectatorPermissions';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { RoomPermissionManager } from '@/lib/roomPermissions';
+import { SpectatorPermissionManager } from '@/lib/spectatorPermissions';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { roomId: string; userId: string } }
+  { params }: { params: Promise<{ roomId: string; userId: string }> }
 ) {
+  const { roomId } = await params; {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

@@ -2,21 +2,20 @@
  * API endpoints for room state backup restoration
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { roomId: string; backupId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string; backupId: string }> }
 ) {
+  const { roomId, backupId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-
-    const { roomId, backupId } = params;
 
     // Check if user is host
     const room = await db.multiplayerRoom.findUnique({
@@ -63,16 +62,15 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
-  { params }: { params: { roomId: string; backupId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string; backupId: string }> }
 ) {
+  const { roomId, backupId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-
-    const { roomId, backupId } = params;
 
     // Check if user is host
     const room = await db.multiplayerRoom.findUnique({
@@ -99,16 +97,15 @@ export async function POST(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { roomId: string; backupId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string; backupId: string }> }
 ) {
+  const { roomId, backupId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-
-    const { roomId, backupId } = params;
 
     // Check if user is host
     const room = await db.multiplayerRoom.findUnique({

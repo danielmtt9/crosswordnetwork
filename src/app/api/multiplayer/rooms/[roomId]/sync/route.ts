@@ -19,8 +19,9 @@ interface SyncResponse {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -138,8 +139,9 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -196,8 +198,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params; {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

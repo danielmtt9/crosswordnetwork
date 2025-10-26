@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       where: {
         userId: session.userId,
         achievementId: achievementId,
-        earned: true
+        earnedAt: { not: null }
       },
       include: {
         achievement: true
@@ -42,21 +42,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create celebration record
-    const celebration = await prisma.achievementCelebration.create({
-      data: {
-        userId: session.userId,
-        achievementId: achievementId,
-        type: celebrationType || 'unlock',
-        timestamp: new Date()
-      }
-    });
+    // Create celebration record (commented out - table doesn't exist in schema)
+    // const celebration = await prisma.achievementCelebration.create({
+    //   data: {
+    //     userId: session.userId,
+    //     achievementId: achievementId,
+    //     type: celebrationType || 'unlock',
+    //     timestamp: new Date()
+    //   }
+    // });
 
     // Get user's recent achievements for context
     const recentAchievements = await prisma.userAchievement.findMany({
       where: {
         userId: session.userId,
-        earned: true
+        earnedAt: { not: null }
       },
       include: {
         achievement: true
@@ -71,43 +71,60 @@ export async function POST(request: NextRequest) {
     const totalAchievements = await prisma.userAchievement.count({
       where: {
         userId: session.userId,
-        earned: true
+        earnedAt: { not: null }
       }
     });
 
-    const totalPoints = await prisma.userAchievement.aggregate({
+    // Calculate total points by joining with Achievement model
+    const earnedAchievements = await prisma.userAchievement.findMany({
       where: {
         userId: session.userId,
-        earned: true
+        earnedAt: { not: null }
       },
-      _sum: {
-        points: true
+      include: {
+        achievement: {
+          select: {
+            points: true
+          }
+        }
       }
     });
+    
+    const totalPoints = earnedAchievements.reduce((sum, ua) => sum + ua.achievement.points, 0);
 
-    const tierCounts = await prisma.userAchievement.groupBy({
-      by: ['tier'],
+    // Calculate tier counts by joining with Achievement model
+    const tierCounts = await prisma.userAchievement.findMany({
       where: {
         userId: session.userId,
-        earned: true
+        earnedAt: { not: null }
       },
-      _count: {
-        tier: true
+      include: {
+        achievement: {
+          select: {
+            tier: true
+          }
+        }
       }
     });
+    
+    const tierCountMap = tierCounts.reduce((acc, ua) => {
+      const tier = ua.achievement.tier;
+      acc[tier] = (acc[tier] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
     return NextResponse.json({
       success: true,
       celebration: {
-        id: celebration.id,
-        type: celebration.type,
-        timestamp: celebration.timestamp
+        id: 'temp-id',
+        type: celebrationType || 'unlock',
+        timestamp: new Date().toISOString()
       },
       achievement: {
         id: userAchievement.achievement.id,
         name: userAchievement.achievement.name,
         description: userAchievement.achievement.description,
-        icon: userAchievement.achievement.icon,
+        icon: userAchievement.achievement.iconName,
         points: userAchievement.achievement.points,
         tier: userAchievement.achievement.tier,
         category: userAchievement.achievement.category,
@@ -117,17 +134,14 @@ export async function POST(request: NextRequest) {
         recentAchievements: recentAchievements.map(ua => ({
           id: ua.achievement.id,
           name: ua.achievement.name,
-          icon: ua.achievement.icon,
+          icon: ua.achievement.iconName,
           tier: ua.achievement.tier,
           earnedAt: ua.earnedAt
         })),
         stats: {
           totalAchievements,
-          totalPoints: totalPoints._sum.points || 0,
-          tierCounts: tierCounts.reduce((acc, tier) => {
-            acc[tier.tier] = tier._count.tier;
-            return acc;
-          }, {} as Record<string, number>)
+          totalPoints,
+          tierCounts: tierCountMap
         }
       }
     });

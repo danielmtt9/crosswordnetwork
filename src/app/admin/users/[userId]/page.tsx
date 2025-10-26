@@ -121,7 +121,7 @@ export default function UserDetailsPage() {
 
   const userId = params.userId as string;
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = isSuperAdmin(currentUserEmail);
+  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
 
   useEffect(() => {
     const fetchUserDetails = async () => {

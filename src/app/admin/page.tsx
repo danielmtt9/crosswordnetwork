@@ -101,7 +101,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
 
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = isSuperAdmin(currentUserEmail);
+  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
 
   useEffect(() => {
     if ((session as any)?.requirePasswordChange) {
@@ -353,14 +353,8 @@ export default function AdminPage() {
                       <div className="text-center py-8">
                         <p className="text-red-500 mb-4">{error}</p>
                       </div>
-                    ) : activity?.auditLogs?.length > 0 ? (
-                      activity.auditLogs.slice(0, 5).map((log: {
-                        id: string;
-                        action: string;
-                        entityType: string;
-                        actor: { name: string | null; email: string | null };
-                        createdAt: string;
-                      }, index: number) => (
+                    ) : activity?.auditLogs && activity.auditLogs.length > 0 ? (
+                      activity.auditLogs.slice(0, 5).map((log: any, index: number) => (
                         <motion.div
                           key={log.id}
                           initial={{ opacity: 0, x: -20 }}

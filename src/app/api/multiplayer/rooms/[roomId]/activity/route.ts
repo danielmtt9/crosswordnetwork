@@ -8,8 +8,9 @@ import { db } from '@/lib/db';
 
 export async function GET(
   req: Request,
-  { params }: { params: { roomId: string } }
+  { params }: { params: Promise<{ roomId: string }> }
 ) {
+  const { roomId } = await params;
   try {
     const session = await getAuthSession();
     if (!session?.user) {

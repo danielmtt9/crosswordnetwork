@@ -6,8 +6,9 @@ import { AdminActivityDashboard } from '@/lib/adminActivityDashboard';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { adminId: string } }
+  { params }: { params: Promise<{ adminId: string }> }
 ) {
+  const { adminId } = await params;
   try {
     const session = await getServerSession(authOptions);
     
@@ -19,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { adminId } = params;
+    const { adminId } = await params;
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get('timeRange') as '24h' | '7d' | '30d' || '30d';
 

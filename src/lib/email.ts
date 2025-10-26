@@ -210,3 +210,21 @@ export class EmailService {
 
 // Export singleton instance
 export const emailService = new EmailService();
+
+export async function sendPasswordResetEmail(email: string, resetUrl: string, userName: string): Promise<boolean> {
+  try {
+    return await emailService.sendPasswordResetEmail(email, resetUrl, userName);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    return false;
+  }
+}
+
+export async function sendVerificationEmail(email: string, verificationUrl: string, userName: string): Promise<boolean> {
+  try {
+    return await emailService.sendVerificationEmail(email, verificationUrl, userName);
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    return false;
+  }
+}

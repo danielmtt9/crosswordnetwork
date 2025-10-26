@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getUserActivity } from "@/lib/admin";
-import { requireAdminAccess } from "@/lib/accessControl";
+import { getUserActivity, hasAdminAccess } from "@/lib/admin";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -11,8 +10,11 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check admin access with detailed logging
-    const accessResult = await requireAdminAccess(session.userId);
+    // Check admin access
+    const isAdmin = await hasAdminAccess(session.userId);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const activity = await getUserActivity();
     return NextResponse.json(activity);
@@ -21,7 +23,7 @@ export async function GET(_request: NextRequest) {
     console.error("Error fetching admin activity:", error);
     
     // Handle access control errors
-    if (error.message.includes('Access denied')) {
+    if (error instanceof Error && error.message.includes('Access denied')) {
       return NextResponse.json(
         { error: error.message },
         { status: 403 }
