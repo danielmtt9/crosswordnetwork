@@ -1,6 +1,6 @@
 # Task 7.0: Integration - Progress Summary
 
-## Status: ~60% Complete
+## Status: ~85% Complete
 
 ### ✅ Completed Work
 
@@ -39,20 +39,18 @@
 - Has existing features we need to preserve (SmartHintSystem, CompletionModal, etc.)
 - Need to test thoroughly before replacement
 
-#### 4. Multiplayer Room Integration
-**File:** `src/app/room/[roomCode]/page.tsx`
-**Actions Needed:**
-- Integrate `AdaptiveLayout` for multiplayer mode (participantCount > 1)
-- Add participant list component to sidebar
-- Wire up auto-save for multiplayer rooms
-- Use new `/api/multiplayer/rooms/[roomId]/save` endpoint
-- Integrate save config GET/PATCH endpoints
-- Test real-time sync with auto-save
-
-**Current State:**
-- Has Socket.IO integration
-- Has basic grid layout with participants and chat
-- Uses `MultiplayerGrid` component (needs review for compatibility)
+#### 4. Multiplayer Room Integration ✅
+**File:** `src/app/room/[roomCode]/page-new.tsx`
+**Completed Actions:**
+- ✅ Integrated `AdaptiveLayout` for multiplayer mode (participantCount > 1)
+- ✅ Added participant list component to adaptive sidebar
+- ✅ Wired up auto-save for multiplayer rooms with `/api/multiplayer/rooms/[roomId]/save`
+- ✅ Fetches and uses room auto-save configuration (enabled, interval)
+- ✅ Handles conflict detection (409 responses) with notifications
+- ✅ Real-time sync via Socket.IO + auto-save
+- ✅ Spectator mode support (view-only access)
+- ✅ Host controls and session management
+- ✅ Clue extraction with retry mechanism
 
 #### 5. End-to-End Testing
 **Test Scenarios:**
@@ -154,11 +152,12 @@
 
 ### 📊 Progress Metrics
 
-- **Lines of Code Added:** ~750 lines
-- **New Files Created:** 2
-- **API Endpoints Utilized:** 2 (single-player save, progress)
-- **Components Integrated:** 5 (CluesPanel, PuzzleArea, HintsMenu, ProgressBar, SaveIndicator)
-- **Hooks Utilized:** 4 (useAutoSave, useIframeMessage, useDeviceType, usePuzzleStore)
+- **Lines of Code Added:** ~1,500 lines
+- **New Files Created:** 3 (clueExtraction.ts, 2 page-new.tsx files)
+- **API Endpoints Utilized:** 5 (puzzle save, progress, room save, room save config, hints)
+- **Components Integrated:** 6 (CluesPanel, PuzzleArea, HintsMenu, ProgressBar, SaveIndicator, RoomParticipantList)
+- **Hooks Utilized:** 5 (useAutoSave, useIframeMessage, useDeviceType, usePuzzleStore, useSocket)
+- **Real-time Features:** Socket.IO for multiplayer sync, conflict detection, host changes
 
 ### 🐛 Known Issues
 
