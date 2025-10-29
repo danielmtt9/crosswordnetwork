@@ -1,12 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface UseAutoSaveOptions {
   saveFunction: () => Promise<void>;
-  delay?: number; // milliseconds
+  debounceDelay?: number; // milliseconds for debounce (default: 150ms)
+  timeBasedInterval?: number; // milliseconds for periodic save (default: 30000ms)
   isDirty?: boolean; // whether there are unsaved changes
-  source?: 'iframe' | 'direct'; // source of changes for different debounce times
+  maxRetries?: number; // maximum retry attempts (default: 3)
+  enableOfflineQueue?: boolean; // queue saves when offline (default: true)
+  onSaveSuccess?: () => void;
+  onSaveError?: (error: Error) => void;
 }
 
 interface UseAutoSaveReturn {
@@ -14,25 +19,42 @@ interface UseAutoSaveReturn {
   lastSaved: Date | null;
   error: string | null;
   forceSave: () => Promise<void>;
+  isOnline: boolean;
+  queuedSaves: number;
 }
 
 export function useAutoSave({
   saveFunction,
-  delay,
+  debounceDelay = 150,
+  timeBasedInterval = 30000,
   isDirty = false,
-  source = 'direct',
+  maxRetries = 3,
+  enableOfflineQueue = true,
+  onSaveSuccess,
+  onSaveError,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
-  // Use different delays based on source
-  const effectiveDelay = delay || (source === 'iframe' ? 300 : 1000);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [queuedSaves, setQueuedSaves] = useState(0);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const periodicTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
+  const retryCountRef = useRef(0);
+  const saveQueueRef = useRef<Array<() => Promise<void>>>([]);
 
-  const performSave = async () => {
+  // Perform save with retry mechanism
+  const performSave = useCallback(async (isRetry = false) => {
     if (!isMountedRef.current) return;
+    
+    // Check if offline and queue is enabled
+    if (!isOnline && enableOfflineQueue) {
+      saveQueueRef.current.push(saveFunction);
+      setQueuedSaves(saveQueueRef.current.length);
+      return;
+    }
     
     setSaveStatus('saving');
     setError(null);
@@ -42,6 +64,8 @@ export function useAutoSave({
       if (isMountedRef.current) {
         setSaveStatus('saved');
         setLastSaved(new Date());
+        retryCountRef.current = 0; // Reset retry count on success
+        onSaveSuccess?.();
         
         // Auto-hide "saved" status after 3 seconds
         setTimeout(() => {
@@ -51,55 +75,129 @@ export function useAutoSave({
         }, 3000);
       }
     } catch (err) {
+      const errorObj = err instanceof Error ? err : new Error('Save failed');
+      
       if (isMountedRef.current) {
-        setSaveStatus('error');
-        setError(err instanceof Error ? err.message : 'Save failed');
+        // Retry logic with exponential backoff
+        if (retryCountRef.current < maxRetries) {
+          retryCountRef.current++;
+          const backoffDelay = Math.min(1000 * Math.pow(2, retryCountRef.current - 1), 10000);
+          
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              performSave(true);
+            }
+          }, backoffDelay);
+        } else {
+          // Max retries reached
+          setSaveStatus('error');
+          setError(errorObj.message);
+          retryCountRef.current = 0;
+          onSaveError?.(errorObj);
+        }
       }
     }
-  };
+  }, [saveFunction, isOnline, enableOfflineQueue, maxRetries, onSaveSuccess, onSaveError]);
 
-  const forceSave = async () => {
+  // Debounced save function
+  const debouncedSave = useDebouncedCallback(
+    () => {
+      performSave();
+    },
+    debounceDelay
+  );
+
+  const forceSave = useCallback(async () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    debouncedSave.cancel(); // Cancel any pending debounced saves
     await performSave();
-  };
+  }, [performSave, debouncedSave]);
 
-  useEffect(() => {
-    // Clear existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    // Only set up auto-save if there are unsaved changes
-    if (isDirty) {
-      timeoutRef.current = setTimeout(() => {
-        performSave();
-      }, effectiveDelay);
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+  // Process queued saves when coming back online
+  const processQueue = useCallback(async () => {
+    if (saveQueueRef.current.length === 0) return;
+    
+    const queue = [...saveQueueRef.current];
+    saveQueueRef.current = [];
+    setQueuedSaves(0);
+    
+    // Process most recent save (last in queue)
+    const lastSave = queue[queue.length - 1];
+    if (lastSave) {
+      try {
+        await lastSave();
+      } catch (err) {
+        console.error('Failed to process queued save:', err);
       }
-      isMountedRef.current = false;
+    }
+  }, []);
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      processQueue();
     };
-  }, [isDirty, effectiveDelay, saveFunction]);
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+    
+    setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [processQueue]);
+
+  // Debounced auto-save when dirty
+  useEffect(() => {
+    if (isDirty && isOnline) {
+      debouncedSave();
+    }
+    
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [isDirty, isOnline, debouncedSave]);
+
+  // Periodic time-based save
+  useEffect(() => {
+    if (timeBasedInterval > 0) {
+      periodicTimerRef.current = setInterval(() => {
+        if (isDirty && isOnline) {
+          performSave();
+        }
+      }, timeBasedInterval);
+    }
+    
+    return () => {
+      if (periodicTimerRef.current) {
+        clearInterval(periodicTimerRef.current);
+      }
+    };
+  }, [isDirty, isOnline, timeBasedInterval, performSave]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      debouncedSave.cancel();
     };
-  }, []);
+  }, [debouncedSave]);
 
   return {
     saveStatus,
     lastSaved,
     error,
     forceSave,
+    isOnline,
+    queuedSaves,
   };
 }
