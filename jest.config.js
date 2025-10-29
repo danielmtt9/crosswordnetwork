@@ -17,59 +17,191 @@ const customJestConfig = {
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/**/*.test.{js,jsx,ts,tsx}',
+    '!src/**/*.spec.{js,jsx,ts,tsx}',
+    '!tests/**/*',
   ],
-  // Use ts-jest for TypeScript transformation
-  preset: 'ts-jest',
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+  // Use ts-jest for TypeScript, babel-jest for JavaScript
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.jest.json',
+    '^.+\.tsx?$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      }
     }],
-    '^.+\\.(js|jsx)$': 'babel-jest',
-    '^.+\\.mjs$': 'babel-jest',
+    '^.+\.(js|jsx|mjs)$': 'babel-jest',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter)/)',
   ],
   projects: [
     {
-      displayName: 'API Routes',
+      displayName: 'Unit Tests - API Routes',
       testMatch: ['<rootDir>/src/app/api/**/*.test.ts'],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
       },
-      preset: 'ts-jest',
       transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', {
-          tsconfig: 'tsconfig.jest.json',
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
         }],
-        '^.+\\.(js|jsx)$': 'babel-jest',
-        '^.+\\.mjs$': 'babel-jest',
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
       },
       transformIgnorePatterns: [
         'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
       ],
     },
     {
-      displayName: 'Components',
+      displayName: 'Unit Tests - Components',
       testMatch: ['<rootDir>/src/components/**/*.test.tsx', '<rootDir>/src/hooks/**/*.test.ts', '<rootDir>/src/lib/**/*.test.ts'],
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
       },
-      preset: 'ts-jest',
       transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', {
-          tsconfig: 'tsconfig.jest.json',
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
         }],
-        '^.+\\.(js|jsx)$': 'babel-jest',
-        '^.+\\.mjs$': 'babel-jest',
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
       },
       transformIgnorePatterns: [
         'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
       ],
+    },
+    {
+      displayName: 'Integration Tests',
+      testMatch: ['<rootDir>/tests/integration/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/integration.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
+        }],
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
+      ],
+      testTimeout: 30000,
+    },
+    {
+      displayName: 'End-to-End Tests',
+      testMatch: ['<rootDir>/tests/e2e/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/e2e.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
+        }],
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
+      ],
+      testTimeout: 60000,
+    },
+    {
+      displayName: 'Performance Tests',
+      testMatch: ['<rootDir>/tests/performance/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/performance.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
+        }],
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
+      ],
+      testTimeout: 120000,
+    },
+    {
+      displayName: 'Security Tests',
+      testMatch: ['<rootDir>/tests/security/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/security.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
+        }],
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
+      ],
+      testTimeout: 30000,
+    },
+    {
+      displayName: 'MCP Tests',
+      testMatch: ['<rootDir>/tests/mcp/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/mcp.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      transform: {
+        '^.+\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            jsx: 'react-jsx',
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true,
+          }
+        }],
+        '^.+\.(js|jsx|mjs)$': 'babel-jest',
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
+      ],
+      testTimeout: 45000,
     },
   ],
 }
