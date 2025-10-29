@@ -94,7 +94,7 @@ describe("/api/admin/users", () => {
           _count: {
             progress: 5,
             hostedRooms: 2,
-            roomParticipants: 3,
+            notifications: 3,
           },
         },
       ];

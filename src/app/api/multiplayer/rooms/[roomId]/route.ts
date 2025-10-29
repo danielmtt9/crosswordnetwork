@@ -8,10 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ roomId: string }> }
 ) {
   try {
+    // Session is optional for viewing a room; required only for private rooms
     const session = await getServerSession(authOptions);
-    if (!session?.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const resolvedParams = await params;
     const roomCode = resolvedParams.roomId; // roomId is actually roomCode
@@ -52,6 +50,17 @@ export async function GET(
         }
       }
     });
+
+    // If room is private, only allow host or participants (require session)
+    if (room?.isPrivate) {
+      const isHost = session?.userId && room.hostUserId === session.userId;
+      const isParticipant = session?.userId
+        ? room.participants.some(p => p.userId === session.userId)
+        : false;
+      if (!(isHost || isParticipant)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     if (!room) {
       return NextResponse.json(

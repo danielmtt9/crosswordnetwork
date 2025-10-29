@@ -127,7 +127,15 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { completedCells, completionTimeSeconds, hintsUsed, score, isCompleted, gridState } = body;
+    const { completedCells, completionTimeSeconds, hintsUsed, score, isCompleted, gridState, isAutoSave } = body;
+
+    const now = new Date();
+    
+    // Prepare auto-save tracking updates if this is an auto-save
+    const autoSaveUpdates = isAutoSave ? {
+      autoSaveCount: { increment: 1 },
+      lastAutoSave: now,
+    } : {};
 
     // Upsert user progress
     const userProgress = await prisma.userProgress.upsert({
@@ -143,8 +151,9 @@ export async function POST(
         hintsUsed: hintsUsed || 0,
         score: score || 0,
         isCompleted: isCompleted || false,
-        lastPlayedAt: new Date(),
-        completedAt: isCompleted ? new Date() : null,
+        lastPlayedAt: now,
+        completedAt: isCompleted ? now : null,
+        ...autoSaveUpdates,
       },
       create: {
         userId: userId,
@@ -154,8 +163,10 @@ export async function POST(
         hintsUsed: hintsUsed || 0,
         score: score || 0,
         isCompleted: isCompleted || false,
-        lastPlayedAt: new Date(),
-        completedAt: isCompleted ? new Date() : null,
+        lastPlayedAt: now,
+        completedAt: isCompleted ? now : null,
+        autoSaveCount: isAutoSave ? 1 : 0,
+        lastAutoSave: isAutoSave ? now : null,
       },
     });
 

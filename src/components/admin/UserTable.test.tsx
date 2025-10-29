@@ -89,7 +89,7 @@ const mockUsers = [
     _count: {
       progress: 5,
       hostedRooms: 2,
-      roomParticipants: 3,
+      notifications: 3,
     },
   },
   {
@@ -105,7 +105,7 @@ const mockUsers = [
     _count: {
       progress: 10,
       hostedRooms: 5,
-      roomParticipants: 8,
+      notifications: 8,
     },
   },
 ];

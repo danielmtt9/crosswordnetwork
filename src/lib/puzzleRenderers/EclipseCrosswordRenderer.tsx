@@ -309,7 +309,9 @@ function EclipseCrosswordComponent({
               height: `${iframeHeight}px`,
               minHeight: '0px',
               maxHeight: 'none',
-              backgroundColor: 'transparent'
+              backgroundColor: 'transparent',
+              overflow: 'hidden', // No scrollbars in iframe
+              display: 'block'
             }}
           />
         </div>

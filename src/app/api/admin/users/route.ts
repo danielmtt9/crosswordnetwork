@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
             select: {
               userProgress: true,
               hostedRooms: true,
-              roomParticipants: true
+              notifications: true,
+              userAchievements: true
             }
           }
         },

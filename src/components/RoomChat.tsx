@@ -133,8 +133,15 @@ export function RoomChat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Track previous messages length to only scroll on new messages
+  const prevMessagesLengthRef = useRef(messages.length);
+
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll if new messages were added (not on re-renders)
+    if (messages.length > prevMessagesLengthRef.current) {
+      scrollToBottom();
+      prevMessagesLengthRef.current = messages.length;
+    }
   }, [messages, scrollToBottom]);
 
   // Update message history when messages prop changes

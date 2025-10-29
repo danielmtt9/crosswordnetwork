@@ -8,7 +8,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
-const port = parseInt(process.env.PORT || '3000', 10);
+const port = parseInt(process.env.PORT || '3004', 10);
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
@@ -22,9 +22,9 @@ app.prepare().then(() => {
   const io = new Server(httpServer, {
     cors: {
       origin: [
-        process.env.NEXTAUTH_URL || 'http://localhost:3000',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000'
+        process.env.NEXTAUTH_URL || 'http://localhost:3004',
+        'http://localhost:3004',
+        'http://127.0.0.1:3004'
       ],
       methods: ['GET', 'POST'],
       credentials: true
@@ -48,23 +48,24 @@ app.prepare().then(() => {
                  where: { roomCode }
                });
 
-               if (room && room.gridState) {
-                 // Force save current grid state (no debounce for auto-save)
+               if (room) {
+                 // Just update lastActivityAt to keep track of active rooms
+                 // The actual gridState is saved immediately via cell_update events
                  await prisma.multiplayerRoom.update({
                    where: { id: room.id },
-                   data: { gridState: room.gridState }
+                   data: { lastActivityAt: new Date() }
                  });
-                 console.log(`[Auto-save] Saved grid state for room ${roomCode}`);
                  
                  // Emit auto-save event to all room participants
                  io.to(roomCode).emit('room_autosaved', {
                    roomCode,
                    timestamp: new Date().toISOString(),
-                   message: 'Progress auto-saved'
+                   message: 'Progress saved'
                  });
+                 console.log(`[Auto-save] Updated activity for room ${roomCode}`);
                }
              } catch (error) {
-               console.error(`[Auto-save] Error saving room ${roomCode}:`, error);
+               console.error(`[Auto-save] Error updating room ${roomCode}:`, error);
              }
            }, 30000); // 30 seconds
 
@@ -131,26 +132,36 @@ app.prepare().then(() => {
           select: { username: true, name: true }
         });
 
-        // Add participant to database
-        const participant = await prisma.roomParticipant.upsert({
+        // Check if participant already exists
+        const existingParticipant = await prisma.roomParticipant.findFirst({
           where: {
-            roomId_userId: {
-              roomId: room.id,
-              userId: userId
-            }
-          },
-          update: {
-            isOnline: true,
-            leftAt: null
-          },
-          create: {
             roomId: room.id,
-            userId: userId,
-            displayName: user?.username || user?.name || userName,
-            role: role || 'SPECTATOR',
-            isOnline: true
+            userId: userId
           }
         });
+
+        let participant;
+        if (existingParticipant) {
+          // Update existing participant
+          participant = await prisma.roomParticipant.update({
+            where: { id: existingParticipant.id },
+            data: {
+              isOnline: true,
+              leftAt: null
+            }
+          });
+        } else {
+          // Create new participant
+          participant = await prisma.roomParticipant.create({
+            data: {
+              roomId: room.id,
+              userId: userId,
+              displayName: user?.username || user?.name || userName,
+              role: role || 'SPECTATOR',
+              isOnline: true
+            }
+          });
+        }
 
         // Send success response to the joining player
         socket.emit('join_room_response', {

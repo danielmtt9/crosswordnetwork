@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "next-auth/react";
-import { isSuperAdmin } from "@/lib/superAdmin";
+// Removed direct import of isSuperAdmin - now using API route
 import { UserSuspensionModal } from "@/components/admin/UserSuspensionModal";
 
 interface UserDetails {
@@ -59,7 +59,7 @@ interface UserDetails {
     _count: {
       progress: number;
       hostedRooms: number;
-      roomParticipants: number;
+      notifications: number;
     };
   };
   recentProgress: Array<{
@@ -121,7 +121,25 @@ export default function UserDetailsPage() {
 
   const userId = params.userId as string;
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
+  const [isCurrentUserSuperAdmin, setIsCurrentUserSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkSuperAdminStatus = async () => {
+      if (currentUserEmail) {
+        try {
+          const response = await fetch('/api/admin/status');
+          if (response.ok) {
+            const data = await response.json();
+            setIsCurrentUserSuperAdmin(data.isSuperAdmin);
+          }
+        } catch (error) {
+          console.error('Failed to check super admin status:', error);
+          setIsCurrentUserSuperAdmin(false);
+        }
+      }
+    };
+    checkSuperAdminStatus();
+  }, [currentUserEmail]);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -472,7 +490,7 @@ export default function UserDetailsPage() {
                     <Gamepad2 className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Rooms Joined</span>
                   </div>
-                  <span className="font-medium">{user._count.roomParticipants}</span>
+                  <span className="font-medium">{user._count.notifications}</span>
                 </div>
 
                 <div className="flex items-center justify-between">

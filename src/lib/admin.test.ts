@@ -62,7 +62,7 @@ describe('Admin Utilities', () => {
           _count: {
             progress: 5,
             hostedRooms: 2,
-            roomParticipants: 3
+            notifications: 3
           }
         }
       ];
@@ -322,7 +322,7 @@ describe('Admin Utilities', () => {
         _count: {
           progress: 5,
           hostedRooms: 2,
-          roomParticipants: 3
+          notifications: 3
         }
       };
 

@@ -39,7 +39,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { isSuperAdmin } from "@/lib/superAdmin";
+// Removed direct import of isSuperAdmin - now using API route
 
 interface FeatureFlag {
   id: string;
@@ -78,7 +78,25 @@ export default function FeatureFlagsPage() {
   const [toggling, setToggling] = useState<string | null>(null);
 
   const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
+  const [isCurrentUserSuperAdmin, setIsCurrentUserSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkSuperAdminStatus = async () => {
+      if (currentUserEmail) {
+        try {
+          const response = await fetch('/api/admin/status');
+          if (response.ok) {
+            const data = await response.json();
+            setIsCurrentUserSuperAdmin(data.isSuperAdmin);
+          }
+        } catch (error) {
+          console.error('Failed to check super admin status:', error);
+          setIsCurrentUserSuperAdmin(false);
+        }
+      }
+    };
+    checkSuperAdminStatus();
+  }, [currentUserEmail]);
 
   // Form state for creating new flags
   const [newFlag, setNewFlag] = useState({

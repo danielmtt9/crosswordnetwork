@@ -236,41 +236,42 @@
     }
   }
 
-  // Move EclipseCrossword right-side UI to right panel (desktop) or bottom (mobile)
+  // Hide clue panels inside iframe since parent displays them
   function relocateRightPaneToSide() {
     try {
-      const isMobile = window.innerWidth < 768;
       const table = document.querySelector('table');
       if (!table) return;
 
       const rightTd = table.querySelector('td[valign="top"]') || table.querySelector('td:nth-child(2)');
       
-      if (isMobile) {
-        // On mobile, use bottom panel as before
-        const gridArea = table.querySelector('.ecw-crosswordarea')?.parentElement || table;
-        const bottomHost = document.createElement('div');
-        bottomHost.id = 'ecw-bottom-panel';
-        bottomHost.style.marginTop = '12px';
-
-        ['welcomemessage','answerbox','congratulations']
-          .map(id => document.getElementById(id))
-          .filter(Boolean)
-          .forEach(el => bottomHost.appendChild(el));
-
-        if (gridArea && gridArea.parentElement) {
-          gridArea.parentElement.insertBefore(bottomHost, gridArea.nextSibling);
-        }
-        if (rightTd) rightTd.style.display = 'none';
-      } else {
-        // On desktop, keep right panel visible
-        if (rightTd) {
-          rightTd.style.display = 'table-cell';
-          rightTd.style.width = '300px';
-          rightTd.style.minWidth = '300px';
-          rightTd.style.verticalAlign = 'top';
-          rightTd.style.paddingLeft = '16px';
-        }
+      // Hide the right panel completely (clues displayed in parent)
+      if (rightTd) {
+        rightTd.style.display = 'none';
       }
+      
+      // Keep only the answer box and messages in bottom panel
+      const gridArea = table.querySelector('.ecw-crosswordarea')?.parentElement || table;
+      const bottomHost = document.createElement('div');
+      bottomHost.id = 'ecw-bottom-panel';
+      bottomHost.style.marginTop = '12px';
+
+      // Only keep welcome message, answer box, and congratulations
+      // Hide clue lists since they're in parent
+      ['welcomemessage','answerbox','congratulations']
+        .map(id => document.getElementById(id))
+        .filter(Boolean)
+        .forEach(el => bottomHost.appendChild(el));
+
+      if (gridArea && gridArea.parentElement) {
+        gridArea.parentElement.insertBefore(bottomHost, gridArea.nextSibling);
+      }
+      
+      // Hide clue-related elements that might still be visible
+      const hideElements = ['clueacross', 'cluedown', 'acrossclues', 'downclues'];
+      hideElements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
     } catch (e) {
       console.error('relocateRightPaneToSide error', e);
     }

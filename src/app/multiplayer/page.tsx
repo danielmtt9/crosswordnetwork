@@ -344,7 +344,7 @@ export default function MultiplayerPage() {
 
                       <div className="flex gap-2">
                         <Button asChild className="flex-1">
-                          <Link href={`/room/${room.id}`}>
+                          <Link href={`/room/${room.roomCode}`}>
                             {room.isActive ? (
                               <>
                                 <Eye className="mr-2 h-4 w-4" />
@@ -361,7 +361,7 @@ export default function MultiplayerPage() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => copyRoomCode(room.joinCode)}
+                          onClick={() => copyRoomCode(room.roomCode)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>

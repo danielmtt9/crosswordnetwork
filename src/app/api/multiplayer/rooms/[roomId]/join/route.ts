@@ -33,16 +33,22 @@ export async function POST(
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    if (room.status !== 'WAITING') {
+    // Only allow joining WAITING or ACTIVE rooms
+    // COMPLETED and EXPIRED rooms cannot be joined
+    if (room.status === 'COMPLETED' || room.status === 'EXPIRED') {
       return NextResponse.json({ 
-        error: "Room is not accepting new players" 
+        error: "This room has ended and is no longer accepting players" 
       }, { status: 400 });
     }
 
-    // Check if room is full
-    if (room.participants.length >= room.maxPlayers) {
+    // Check if room is full (only count PLAYER roles, spectators don't count against limit)
+    const playerCount = room.participants.filter(p => p.role === 'PLAYER' || p.role === 'HOST').length;
+    
+    // We'll check maxPlayers after determining the user's role
+    // For now, just do a preliminary check to prevent abuse
+    if (room.participants.length >= 100) { // Hard limit to prevent spam
       return NextResponse.json({ 
-        error: "Room is full" 
+        error: "Room has reached maximum capacity" 
       }, { status: 400 });
     }
 
@@ -55,9 +61,25 @@ export async function POST(
     });
 
     if (existingParticipant) {
-      return NextResponse.json({ 
-        error: "You are already in this room" 
-      }, { status: 400 });
+      // User is already in room, just update their online status and return success
+      const updatedParticipant = await prisma.roomParticipant.update({
+        where: { id: existingParticipant.id },
+        data: { 
+          isOnline: true,
+          leftAt: null
+        }
+      });
+      
+      return NextResponse.json({
+        success: true,
+        participant: updatedParticipant,
+        room: {
+          ...room,
+          password: room.password ? '***' : null,
+          participantCount: room.participants.length
+        },
+        message: "Already in room - status updated"
+      });
     }
 
     // Check password for private rooms
@@ -98,14 +120,37 @@ export async function POST(
                      (user.subscriptionStatus === 'TRIAL' && user.trialEndsAt && new Date() < user.trialEndsAt);
 
     let role: 'HOST' | 'PLAYER' | 'SPECTATOR' = 'SPECTATOR';
-    if (isPremium) {
-      role = 'PLAYER';
-    } else if (room.allowSpectators) {
+    
+    // If room is ACTIVE, force spectator role (game already in progress)
+    if (room.status === 'ACTIVE') {
+      if (!room.allowSpectators) {
+        return NextResponse.json({ 
+          error: "This room is in progress and doesn't allow spectators" 
+        }, { status: 403 });
+      }
       role = 'SPECTATOR';
     } else {
-      return NextResponse.json({ 
-        error: "This room doesn't allow spectators and you need a premium subscription to play" 
-      }, { status: 403 });
+      // Room is WAITING, assign role based on premium status
+      if (isPremium) {
+        // Check if there's room for another player
+        if (playerCount >= room.maxPlayers) {
+          // Room is full of players, check if spectators are allowed
+          if (!room.allowSpectators) {
+            return NextResponse.json({ 
+              error: "Room is full and spectators are not allowed" 
+            }, { status: 400 });
+          }
+          role = 'SPECTATOR';
+        } else {
+          role = 'PLAYER';
+        }
+      } else if (room.allowSpectators) {
+        role = 'SPECTATOR';
+      } else {
+        return NextResponse.json({ 
+          error: "This room doesn't allow spectators and you need a premium subscription to play" 
+        }, { status: 403 });
+      }
     }
 
     // Add participant to room

@@ -24,7 +24,7 @@ import {
   FileText
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { isSuperAdmin } from "@/lib/superAdmin";
+// Removed direct import of isSuperAdmin - now using API route
 import { RoomLifecycleStats } from "@/components/RoomLifecycleStats";
 
 // System health status - this will be fetched from API
@@ -100,14 +100,31 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const currentUserEmail = session?.user?.email;
-  const isCurrentUserSuperAdmin = currentUserEmail ? isSuperAdmin(currentUserEmail) : false;
+  const currentUserId = session?.user?.id;
+  const [isCurrentUserSuperAdmin, setIsCurrentUserSuperAdmin] = useState(false);
 
   useEffect(() => {
     if ((session as any)?.requirePasswordChange) {
       router.push('/force-password-change');
       return;
     }
+    
+    // Check if user is super admin via API route
+    const checkSuperAdmin = async () => {
+      if (currentUserId) {
+        try {
+          const response = await fetch('/api/admin/status');
+          if (response.ok) {
+            const data = await response.json();
+            setIsCurrentUserSuperAdmin(data.isSuperAdmin);
+          }
+        } catch (error) {
+          console.error('Failed to check super admin status:', error);
+          setIsCurrentUserSuperAdmin(false);
+        }
+      }
+    };
+    
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -137,8 +154,9 @@ export default function AdminPage() {
       }
     };
 
+    checkSuperAdmin();
     fetchData();
-  }, []);
+  }, [currentUserId]);
 
   return (
     <div className="min-h-screen bg-background">

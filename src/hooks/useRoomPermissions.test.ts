@@ -22,13 +22,10 @@ const mockCreatePermissionContext = createPermissionContext as jest.MockedFuncti
 
 describe('useRoomPermissions', () => {
   const mockPermissionContext = {
+    userId: 'user-123',
+    roomId: 'room-123',
     userRole: 'PLAYER' as ParticipantRole,
     isHost: false,
-    isOnline: true,
-    roomStatus: 'WAITING' as const,
-    isPrivate: false,
-    hasPassword: false,
-    isPremium: true,
   };
 
   beforeEach(() => {

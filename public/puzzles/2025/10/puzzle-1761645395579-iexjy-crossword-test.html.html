@@ -1,0 +1,696 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<title></title>
+<meta name="generator" content="EclipseCrossword" />
+<style type="text/css"><!--
+
+body, h1, h2, h3, h4, h5, h6
+{
+	font-family: "Segoe UI", "Franklin Gothic Medium", "Arial", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6
+{
+	color: #5d6a86;
+}
+
+body
+{
+	cursor: default;
+	font-size: small;
+}
+
+.ecw-answerbox
+{
+	color: black;
+	background-color: #FFFAF0;
+	border-color: #808080;
+	border-style: solid;
+	border-width: 1px;
+	display: block;
+	padding: .75em;
+	width: 240pt;
+}
+
+.ecw-box
+{
+	border-style: solid;
+	border-width: 1pt;
+	cursor: pointer;
+	font-size: .12in;
+	font-weight: bold;
+	height: .18in;
+	overflow: hidden;
+	text-align: center;
+	width: .18in;
+}
+
+.ecw-boxcheated_sel
+{
+	background-color: #FFF1D7;
+	border-color: #C00000;
+	color: #2080D0;
+}
+
+.ecw-boxcheated_unsel
+{
+	background-color: #ffffff;
+	border-color: #606060;
+	color: #2080D0;
+}
+
+.ecw-boxerror_sel
+{
+	background-color: #FFF1D7;
+	border-color: #C00000;
+	color: #BF0000;
+}
+
+.ecw-boxerror_unsel
+{
+	background-color: #FFF0F0;
+	border-color: #606060;
+	color: #BF0000;
+}
+
+.ecw-boxnormal_sel
+{
+	background-color: #FFF1D7;
+	border-color: #C00000;
+	color: #000000;
+}
+
+.ecw-boxnormal_unsel
+{
+	background-color: #ffffff;
+	border-color: #606060;
+	color: #000000;
+}
+
+.ecw-button
+{
+	width: 64pt;
+}
+
+.ecw-cluebox
+{
+	border-bottom-width: 1px;
+	border-color: #c0c0c0;
+	border-left-width: 0px;
+	border-right-width: 0px;
+	border-style: solid;
+	border-top-width: 1px;
+	margin-top: 1em;
+	padding-bottom: .5em;
+	padding-left: 0pt;
+	padding-right: 0pt;
+	padding-top: .5em;
+}
+
+.ecw-crosswordarea
+{
+	background-color: #D0D8E0;
+	border-color: #808080;
+	border-style: solid;
+	border-width: 2px;
+	padding: .5em;
+	font-family: "Segoe UI", "Verdana", "Arial", sans-serif;
+	font-size: small;
+}
+
+.ecw-copyright
+{
+	margin-bottom: 1em;
+	font-size: x-small;
+	font-family: "Segoe UI", "Franklin Gothic Medium", "Arial", sans-serif;
+}
+
+.ecw-input
+{
+	font-family: "Segoe UI", "Verdana", "Arial", sans-serif;
+}
+
+.ecw-wordlabel
+{
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.ecw-wordinfo
+{
+	font-size: 8pt;
+	color: #808080;
+}
+
+.ecw-worderror
+{
+	color: #c00000;
+	font-weight: bold;
+	display: none;
+	margin-top: 1em;
+}
+
+--></style>
+
+</head><body>
+
+<h1></h1>
+<h3 style="margin-top: -1em;"></h3>
+
+<div id="waitmessage" class="ecw-answerbox">
+	This interactive crossword puzzle requires JavaScript and any 
+	recent web browser, including Windows Internet Explorer, Mozilla Firefox, Google Chrome, or 
+	Apple Safari.  If you have disabled web page scripting, please re-enable it and refresh
+	the page.  If this web page is saved on your computer, you may need to click the yellow Information Bar at the top or bottom of
+	the page to allow the puzzle to load.
+</div>
+
+<table cellpadding="0" cellspacing="0" border="0"><tr>
+
+<td class="ecw-crosswordarea">
+
+<script type="text/javascript"><!--
+	CrosswordWidth = 35;
+	CrosswordHeight = 35;
+	Words = 68;
+	WordLength = new Array(7, 9, 5, 10, 9, 8, 8, 12, 4, 12, 5, 7, 5, 6, 4, 7, 4, 6, 5, 11, 8, 6, 5, 6, 8, 4, 8, 12, 8, 8, 6, 8, 12, 6, 6, 12, 12, 6, 11, 10, 6, 11, 7, 6, 9, 6, 7, 12, 5, 7, 7, 8, 4, 6, 8, 8, 7, 10, 11, 11, 5, 7, 5, 11, 9, 9, 7, 4);
+	Word = new Array("COMMONS", "CRONKHITE", "PETRO", "PROVINCIAL", "NORTHWEST", "ADJACENT", "EDMONTON", "NORTHEASTERN", "19TH", "CONTEMPORARY", "RURAL", "EASTERN", "JAPAN", "NATIVE", "NOVA", "TORONTO", "EAST", "ARCTIC", "LOWER", "YUKON RIVER", "MANITOBA", "RIDING", "UPPER", "SCOTIA", "MONTREAL", "YORK", "SOUTHERN", "SASKATCHEWAN", "COLUMBIA", "WINNIPEG", "NEARBY", "SPEAKING", "SOUTHEASTERN", "UNITED", "QUEBEC", "SOUTHWESTERN", "NORTHWESTERN", "HOCKEY", "CONTINENTAL", "HUDSON BAY", "MODERN", "INDEPENDENT", "WESTERN", "OTTAWA", "BRUNSWICK", "BOREAL", "ONTARIO", "NEWFOUNDLAND", "URBAN", "ALBERTA", "CENTURY", "NORTHERN", "MADE", "MEXICO", "COLONIAL", "CANADIAN", "CALGARY", "NINETEENTH", "LEGISLATIVE", "GREAT LAKES", "CROSS", "POSTWAR", "ASEAN", "SCARBOROUGH", "VANCOUVER", "SUBARCTIC", "CENTRAL", "WEST");
+	Clue = new Array("(usually singular in construction) A public area, especially a dining hall, at a college or university; a similar shared spaced elsewhere.", 
+"A surname.", 
+"In Haitian voodoo, a class of loa of uncertain origin, chiefly associated with fierceness or aggression.", 
+"Of or pertaining to a province.", 
+"The intercardinal compass point halfway between west and north; specifically at a bearing of 315°.", 
+"Lying next to, close, or contiguous; neighboring; bordering on.", 
+"The capital city of Alberta, Canada.", 
+"Of, related to, located in, or from the northeast.", 
+"Abbreviation of nineteenth. [The ordinal form of the number nineteen.]", 
+"From the same time period, coexistent in time; contemporaneous.", 
+"Relating to the countryside or to agriculture.", 
+"Of, facing, situated in, or related to the east.", 
+"A country and archipelago in East Asia.", 
+"Belonging to one by birth.", 
+"(astronomy) Any sudden brightening of a previously inconspicuous star.", 
+"The capital city of Ontario, Canada and largest city in Canada.", 
+"The direction of the earth's rotation, specifically 90°.", 
+"(astronomy, now only in compounds) Pertaining to the celestial north pole, or to the pole star.", 
+"Bottom; more towards the bottom than the middle of an object.", 
+"Synonym of Yukon (“a river in Canada and Alaska”).", 
+"A province in western Canada. Capital and largest city: Winnipeg.", 
+"A path cut through woodland.", 
+"At a higher level, rank or position.", 
+"(poetic) a constituent country of the United Kingdom.", 
+"A place in Quebec, Canada, at the confluence of the Ottawa and Saint-Lawrence Rivers", 
+"(cricket) to bowl a yorker at a batsman, especially to get a batsman out in this way.", 
+"Of, facing, situated in, or related to the south.", 
+"A prairie province in western Canada. Capital: Regina.", 
+"(poetic) America; the United States; an appellation given in honor of Christopher Columbus.", 
+"The capital city of Manitoba, Canada.", 
+"Adjacent, near, close by.", 
+"Used in speaking.", 
+"Of or pertaining to the southeast.", 
+"Joined into a single entity.", 
+"A province in eastern Canada. Capital: Quebec City. Largest city: Montreal.", 
+"Of or pertaining to the southwest.", 
+"Of or pertaining to the northwest; from or to in such a direction.", 
+"Any of a family of sports in which hockey sticks are used to move a ball or puck into a goal.", 
+"Of or relating to a continent or continents.", 
+"A gulf of Nunavut, Canada, a southern extension of the Arctic Ocean. A large arctic sea, surrounded on three sides, by Quebec on the east, Nunavut to the west, Manitoba to the southwest, Ontario on the south, and extending southeast becoming James Bay. To the north lies the Canadian Arctic Archipelago in the Arctic Ocean.", 
+"Pertaining to a current or recent time and style; not ancient.", 
+"Not dependent; not contingent or depending on something else; free.", 
+"Of, facing, situated in, or related to the west.", 
+"An Algonquian people closely related to the Ojibwe.", 
+"The usual English name for Braunschweig, a city in Lower Saxony, Germany.", 
+"Of, relating to, or coming from the north.", 
+"A province in eastern Canada. Capital: Toronto.", 
+"A large island off the coast of eastern Canada, which, along with Labrador, has composed the Canadian province of Newfoundland and Labrador since 1949, and the Dominion of Newfoundland, before it.", 
+"Of, pertaining to, characteristic of, or happening or located in, a city or town; of, pertaining to, or characteristic of life in such a place, especially when contrasted with the countryside.", 
+"A province in western Canada. Capital: Edmonton. Largest city: Calgary.", 
+"A period of 100 consecutive years; often specifically a numbered period with conventional start and end dates, e.g., the twentieth century, which stretches from (strictly) 1901 through 2000, or (informally) 1900 through 1999. The first century AD was from 1 to 100.", 
+"Of, facing, situated in, or related to the north; northerly.", 
+"(UK dialectal or obsolete) A grub or maggot.", 
+"A country in North America, located south of the United States, and northwest of Guatemala and Belize from Central America. Official name: United Mexican States.", 
+"Of or pertaining to a colony.", 
+"Of, belonging to, or relating to Canada, its culture, or people.", 
+"The largest city in Alberta, Canada.", 
+"The ordinal form of the number nineteen.", 
+"Making, or having the power to make, a law or laws; lawmaking.", 
+"A group of five lakes on the United States–Canada border, consisting of Lake Superior, Lake Michigan and Lake Huron (Lake Michigan–Huron), Lake Erie and Lake Ontario.", 
+"A geometrical figure consisting of two straight lines or bars intersecting each other such that at least one of them is bisected by the other.", 
+"Alternative spelling of post-war [Pertaining to a period of time immediately following the end of a war; where there is a cessation of conflict.]", 
+"Acronym of Association of Southeast Asian Nations.", 
+"A coastal town in North Yorkshire, England (OS grid ref TA040880). It should now be a civil parish, with a town council elected on 1 May 2025.", 
+"A surname.", 
+"(geography) The region immediately outside of the Arctic Circle or regions similar to these in climate or conditions of life.", 
+"Being in the centre.", 
+"The direction opposite to that of the earth's rotation, specifically 270°.");
+	AnswerHash = new Array(89389, 50596, 17916, 49914, 68819, 62280, 48111, 60744, -72594, 10634, 48602, 73368, 94370, 21218, 16887, 46524, 76146, 59498, 59827, 44743, 86513, 33550, 27617, 72761, 74121, 50256, 11016, 12634, 52505, 33018, 3824, 49732, 759, 5347, 98277, 27439, 11330, 61096, 88073, 27146, 54827, 11451, 2183, 13847, 34487, 26313, 3313, 4893, 77239, 66900, 38939, 55343, 78242, 77463, 52928, 87718, 71206, 79067, 57303, 58683, 12404, 86937, 10647, 17689, 52249, 44080, 40176, 11777);
+	WordX = new Array(21, 9, 5, 25, 9, 2, 0, 17, 13, 6, 0, 28, 14, 0, 10, 22, 17, 14, 28, 5, 21, 17, 6, 14, 4, 14, 2, 13, 27, 0, 19, 10, 22, 10, 8, 19, 26, 31, 9, 3, 0, 22, 34, 15, 30, 32, 7, 28, 1, 17, 5, 11, 14, 24, 26, 19, 22, 9, 33, 29, 15, 0, 2, 23, 27, 13, 19, 6);
+	WordY = new Array(0, 1, 2, 2, 3, 4, 6, 6, 7, 9, 10, 10, 11, 13, 13, 13, 14, 16, 17, 18, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 28, 29, 31, 32, 34, 34, 0, 0, 1, 2, 3, 3, 4, 6, 6, 7, 9, 9, 10, 11, 12, 12, 15, 15, 15, 16, 17, 18, 19, 21, 22, 24, 24, 24, 24, 26, 26, 27);
+	LastHorizontalWord = 35;
+	OnlyCheckOnce = false;
+//-->
+</script>
+
+<script type="text/javascript"><!--
+
+// EclipseCrossword (C) Copyright 2000-2013 Green Eclipse.
+// The puzzle itself remains the property of its creator. Do not remove this copyright notice.
+
+var BadChars = "`~!@^*()_={[}]\\|:;\"',<>/?";
+
+var TableAcrossWord, TableDownWord;
+var CurrentWord, PrevWordHorizontal, x, y, i, j;
+var CrosswordFinished, Initialized;
+
+// Check the user's browser and then initialize the puzzle.
+if (document.getElementById("waitmessage") != null)
+{
+	document.getElementById("waitmessage").innerHTML = "Please wait while the crossword is loaded...";
+	
+	// Current game variables
+	CurrentWord = -1;
+	PrevWordHorizontal = false;
+	
+	// Create the cell-to-word arrays.
+	TableAcrossWord = new Array(CrosswordWidth);
+	for (var x = 0; x < CrosswordWidth; x++) TableAcrossWord[x] = new Array(CrosswordHeight);
+	TableDownWord = new Array(CrosswordWidth);
+	for (var x = 0; x < CrosswordWidth; x++) TableDownWord[x] = new Array(CrosswordHeight);
+	for (var y = 0; y < CrosswordHeight; y++)
+		for (var x = 0; x < CrosswordWidth; x++)
+		{
+			TableAcrossWord[x][y] = -1;
+			TableDownWord[x][y] = -1;
+		}
+	
+	// First, add the horizontal words to the puzzle.
+	for (var i = 0; i <= LastHorizontalWord; i++)
+	{
+		x = WordX[i];
+		y = WordY[i];
+		for (var j = 0; j < WordLength[i]; j++)
+		{
+			TableAcrossWord[x + j][y] = i;
+		}
+	}
+	
+	// Second, add the vertical words to the puzzle.
+	for (var i = LastHorizontalWord + 1; i < Words; i++)
+	{
+		x = WordX[i];
+		y = WordY[i];
+		for (var j = 0; j < WordLength[i]; j++)
+		{
+			TableDownWord[x][y + j] = i;
+		}
+	}
+	
+	// Now, insert the crossword table.
+	document.writeln("<table id=\"crossword\" cellpadding=\"0\" cellspacing=\"0\" style=\"display: none; border-collapse: collapse;\">");
+	for (var y = 0; y < CrosswordHeight; y++)
+	{
+		document.writeln("<tr>");
+		for (var x = 0; x < CrosswordWidth; x++)
+		{
+			if (TableAcrossWord[x][y] >= 0 || TableDownWord[x][y] >= 0)
+				document.write("<td id=\"c" + PadNumber(x) + PadNumber(y) + "\" class=\"ecw-box ecw-boxnormal_unsel\" onclick=\"SelectThisWord(event);\">&nbsp;</td>");
+			else
+				document.write("<td><\/td>");
+		}
+		document.writeln("<\/tr>");
+	}
+	document.writeln("<\/table>");
+	
+	// Finally, show the crossword and hide the wait message.
+	Initialized = true;
+	document.getElementById("waitmessage").style.display = "none";
+	document.getElementById("crossword").style.display = "block";
+}
+
+// * * * * * * * * * *
+// Event handlers
+
+// Raised when a key is pressed in the word entry box.
+function WordEntryKeyPress(event)
+{
+	if (CrosswordFinished) return;
+	// Treat an Enter keypress as an OK click.
+	if (CurrentWord >= 0 && event.keyCode == 13) OKClick();
+}
+
+// * * * * * * * * * *
+// Helper functions
+
+// Called when we're ready to start the crossword.
+function BeginCrossword()
+{
+	if (Initialized)
+	{
+		document.getElementById("welcomemessage").style.display = "";
+		document.getElementById("checkbutton").style.display = "";
+	}
+}
+
+// Returns true if the string passed in contains any characters prone to evil.
+function ContainsBadChars(theirWord)
+{
+	for (var i = 0; i < theirWord.length; i++)
+		if (BadChars.indexOf(theirWord.charAt(i)) >= 0) return true;
+	return false;
+}
+
+// Pads a number out to three characters.
+function PadNumber(number)
+{
+	if (number < 10)
+		return "00" + number;
+	else if (number < 100)
+		return "0" + number;
+	else
+		return "" +  number;
+}
+
+// Returns the table cell at a particular pair of coordinates.
+function CellAt(x, y)
+{
+	return document.getElementById("c" + PadNumber(x) + PadNumber(y));
+}
+
+// Deselects the current word, if there's a word selected.  DOES not change the value of CurrentWord.
+function DeselectCurrentWord()
+{
+	if (CurrentWord < 0) return;
+	var x, y, i;
+	
+	document.getElementById("answerbox").style.display = "none";
+	ChangeCurrentWordSelectedStyle(false);
+	CurrentWord = -1;
+	
+}
+
+// Changes the style of the cells in the current word.
+function ChangeWordStyle(WordNumber, NewStyle)
+{
+	if (WordNumber< 0) return;
+	var x = WordX[WordNumber];
+	var y = WordY[WordNumber];
+	
+	if (WordNumber<= LastHorizontalWord)
+		for (i = 0; i < WordLength[WordNumber]; i++)
+			CellAt(x + i, y).className = NewStyle;
+	else
+		for (i = 0; i < WordLength[WordNumber]; i++)
+			CellAt(x, y + i).className = NewStyle;
+}
+
+// Changes the style of the cells in the current word between the selected/unselected form.
+function ChangeCurrentWordSelectedStyle(IsSelected)
+{
+	if (CurrentWord < 0) return;
+	var x = WordX[CurrentWord];
+	var y = WordY[CurrentWord];
+	
+	if (CurrentWord <= LastHorizontalWord)
+		for (i = 0; i < WordLength[CurrentWord]; i++)
+			CellAt(x + i, y).className = CellAt(x + i, y).className.replace(IsSelected ? "_unsel" : "_sel", IsSelected ? "_sel" : "_unsel");
+	else
+		for (i = 0; i < WordLength[CurrentWord]; i++)
+			CellAt(x, y + i).className = CellAt(x, y + i).className.replace(IsSelected ? "_unsel" : "_sel", IsSelected ? "_sel" : "_unsel");
+}
+
+// Selects the new word by parsing the name of the TD element referenced by the 
+// event object, and then applying styles as necessary.
+function SelectThisWord(event)
+{
+	if (CrosswordFinished) return;
+	var x, y, i, TheirWord, TableCell;
+	
+	// Deselect the previous word if one was selected.
+	document.getElementById("welcomemessage").style.display = "none";
+	if (CurrentWord >= 0) OKClick();
+	DeselectCurrentWord();
+	
+	// Determine the coordinates of the cell they clicked, and then the word that
+	// they clicked.
+	var target = (event.srcElement ? event.srcElement: event.target);
+	x = parseInt(target.id.substring(1, 4), 10);
+	y = parseInt(target.id.substring(4, 7), 10);
+	
+	// If they clicked an intersection, choose the type of word that was NOT selected last time.
+	if (TableAcrossWord[x][y] >= 0 && TableDownWord[x][y] >= 0)
+		CurrentWord = PrevWordHorizontal ? TableDownWord[x][y] : TableAcrossWord[x][y];
+	else if (TableAcrossWord[x][y] >= 0)
+		CurrentWord = TableAcrossWord[x][y];
+	else if (TableDownWord[x][y] >= 0)
+		CurrentWord = TableDownWord[x][y];
+
+	PrevWordHorizontal = (CurrentWord <= LastHorizontalWord);
+	
+	// Now, change the style of the cells in this word.
+	ChangeCurrentWordSelectedStyle(true);
+	
+	// Then, prepare the answer box.
+	x = WordX[CurrentWord];
+	y = WordY[CurrentWord];
+	TheirWord = "";
+	var TheirWordLength = 0;
+	for (i = 0; i < WordLength[CurrentWord]; i++)
+	{
+		// Find the appropriate table cell.
+		if (CurrentWord <= LastHorizontalWord)
+			TableCell = CellAt(x + i, y);
+		else
+			TableCell = CellAt(x, y + i);
+		// Add its contents to the word we're building.
+		if (TableCell.innerHTML != null && TableCell.innerHTML.length > 0 && TableCell.innerHTML != " " && TableCell.innerHTML.toLowerCase() != "&nbsp;")
+		{
+			TheirWord += TableCell.innerHTML.toUpperCase();
+			TheirWordLength++;
+		}
+		else
+		{
+			TheirWord += "&bull;";
+		}
+	}
+	
+	document.getElementById("wordlabel").innerHTML = TheirWord;
+	document.getElementById("wordinfo").innerHTML = ((CurrentWord <= LastHorizontalWord) ? "Across, " : "Down, ") + WordLength[CurrentWord] + " letters.";
+	document.getElementById("wordclue").innerHTML = Clue[CurrentWord];
+	document.getElementById("worderror").style.display = "none";
+	document.getElementById("cheatbutton").style.display = (Word.length == 0) ? "none" : "";
+	if (TheirWordLength == WordLength[CurrentWord])
+		document.getElementById("wordentry").value = TheirWord.replace(/&AMP;/g, '&');
+	else
+		document.getElementById("wordentry").value = "";
+	
+	// Finally, show the answer box.
+	document.getElementById("answerbox").style.display = "block";
+	try
+	{
+		document.getElementById("wordentry").focus();
+		document.getElementById("wordentry").select();
+	}
+	catch (e)
+	{
+	}
+	
+}
+
+// Called when the user clicks the OK link.
+function OKClick()
+{
+	var TheirWord, x, y, i, TableCell;
+	if (CrosswordFinished) return;
+	if (document.getElementById("okbutton").disabled) return;
+	
+	// First, validate the entry.
+	TheirWord = document.getElementById("wordentry").value.toUpperCase();
+	if (TheirWord.length == 0)
+	{
+		DeselectCurrentWord();
+		return;
+	}
+	if (ContainsBadChars(TheirWord))
+	{
+		document.getElementById("worderror").innerHTML = "The word that you typed contains invalid characters.  Please type only letters in the box above.";
+		document.getElementById("worderror").style.display = "block";
+		return;
+	}
+	if (TheirWord.length < WordLength[CurrentWord])
+	{
+		document.getElementById("worderror").innerHTML  = "You did not type enough letters.  This word has " + WordLength[CurrentWord] + " letters.";
+		document.getElementById("worderror").style.display = "block";
+		return;
+	}
+	if (TheirWord.length > WordLength[CurrentWord])
+	{
+		document.getElementById("worderror").innerHTML = "You typed too many letters.  This word has " + WordLength[CurrentWord] + " letters.";
+		document.getElementById("worderror").style.display = "block";
+		return;
+	}
+	
+	// If we made it this far, they typed an acceptable word, so add these letters to the puzzle and hide the entry box.
+	x = WordX[CurrentWord];
+	y = WordY[CurrentWord];
+	for (i = 0; i < TheirWord.length; i++)
+	{
+		TableCell = CellAt(x + (CurrentWord <= LastHorizontalWord ? i : 0), y + (CurrentWord > LastHorizontalWord ? i : 0));
+		TableCell.innerHTML = TheirWord.substring(i, i + 1);
+	}
+	DeselectCurrentWord();
+}
+
+// Called when the "check puzzle" link is clicked.
+function CheckClick()
+{
+	var i, j, x, y, UserEntry, ErrorsFound = 0, EmptyFound = 0, TableCell;
+	if (CrosswordFinished) return;
+	DeselectCurrentWord();
+	
+	for (y = 0; y < CrosswordHeight; y++)
+	for (x = 0; x < CrosswordWidth; x++)
+		if (TableAcrossWord[x][y] >= 0 || TableDownWord[x][y] >= 0)
+		{
+			TableCell = CellAt(x, y);
+			if (TableCell.className == "ecw-box ecw-boxerror_unsel") TableCell.className = "ecw-box ecw-boxnormal_unsel";
+		}
+		
+	for (i = 0; i < Words; i++)
+	{
+		// Get the user's entry for this word.
+		UserEntry = "";
+		for (j = 0; j < WordLength[i]; j++)
+		{
+			if (i <= LastHorizontalWord)
+				TableCell = CellAt(WordX[i] + j, WordY[i]);
+			else
+				TableCell = CellAt(WordX[i], WordY[i] + j);
+			if (TableCell.innerHTML.length > 0 && TableCell.innerHTML.toLowerCase() != "&nbsp;")
+			{
+				UserEntry += TableCell.innerHTML.toUpperCase();
+			}
+			else
+			{
+				UserEntry = "";
+				EmptyFound++;
+				break;
+			}
+		}
+		UserEntry = UserEntry.replace(/&AMP;/g, '&');
+		// If this word doesn't match, it's an error.
+		if (HashWord(UserEntry) != AnswerHash[i] && UserEntry.length > 0)
+		{
+			ErrorsFound++;
+			ChangeWordStyle(i, "ecw-box ecw-boxerror_unsel");
+		}
+	}
+	
+	// If they can only check once, disable things prematurely.
+	if ( OnlyCheckOnce )
+	{
+		CrosswordFinished = true;
+		document.getElementById("checkbutton").style.display = "none";
+	}
+	
+	// If errors were found, just exit now.
+	if (ErrorsFound > 0 && EmptyFound > 0)
+		document.getElementById("welcomemessage").innerHTML = ErrorsFound + (ErrorsFound > 1 ? " errors" : " error") + " and " + EmptyFound + (EmptyFound > 1 ? " incomplete words were" : " incomplete word was") + " found.";
+	else if (ErrorsFound > 0)
+		document.getElementById("welcomemessage").innerHTML = ErrorsFound + (ErrorsFound > 1 ? " errors were" : " error was") + " found.";
+	else if (EmptyFound > 0)
+		document.getElementById("welcomemessage").innerHTML = "No errors were found, but " + EmptyFound + (EmptyFound > 1 ? " incomplete words were" : " incomplete word was") + " found.";
+	
+	if (ErrorsFound + EmptyFound > 0)
+	{
+		document.getElementById("welcomemessage").style.display = "";
+		return;
+	}
+			
+	// They finished the puzzle!
+	CrosswordFinished = true;
+	document.getElementById("checkbutton").style.display = "none";
+	document.getElementById("congratulations").style.display = "block";
+	document.getElementById("welcomemessage").style.display = "none";
+}
+
+// Called when the "cheat" link is clicked.
+function CheatClick()
+{
+	if (CrosswordFinished) return;
+	var OldWord = CurrentWord;
+	document.getElementById("wordentry").value = Word[CurrentWord];
+	OKClick();
+	ChangeWordStyle(OldWord, "ecw-box ecw-boxcheated_unsel");
+}
+
+// Returns a one-way hash for a word.
+function HashWord(Word)
+{
+	var x = (Word.charCodeAt(0) * 719) % 1138;
+	var Hash = 837;
+	var i;
+	for (i = 1; i <= Word.length; i++)
+		Hash = (Hash * i + 5 + (Word.charCodeAt(i - 1) - 64) * x) % 98503;
+	return Hash;
+}
+
+//-->
+</script>
+
+</td>
+
+<td valign="top" style="padding-left: 1em;">
+
+<div class="ecw-copyright">
+	<a href="http://www.eclipsecrossword.com/" onclick="this.target='_blank'" style="font-weight: bold;">EclipseCrossword</a> &copy; 2000-2013
+</div>
+
+<div id="welcomemessage" class="ecw-answerbox" style="display:none;">
+<h3>Welcome!</h3>
+<p>Click a word in the puzzle to get started.</p>
+</div>
+
+<div id="answerbox" class="ecw-answerbox" style="display:none;">
+<h3 id="wordlabel" class="ecw-wordlabel"> &nbsp;</h3>
+<div id="wordinfo" class="ecw-wordinfo"> </div>
+<div id="wordclue" class="ecw-cluebox"> </div>
+<div style="margin-top: 1em;">
+	<input class="ecw-input" id="wordentry" type="text" size="24" style="font-weight: bold; text-transform:uppercase;" onkeypress="WordEntryKeyPress(event)" onchange="WordEntryKeyPress(event)" />
+</div>
+<div id="worderror" class="ecw-worderror"></div>
+
+<table border="0" cellspacing="0" cellpadding="0" width="100%" style="margin-top:1em;"><tbody><tr><td>
+<button id="cheatbutton" type="button" class="ecw-input ecw-button" onclick="CheatClick();">Solve</button>
+</td><td align="right">
+<button id="okbutton" type="button" class="ecw-input ecw-button" onclick="OKClick();" style="font-weight: bold;">OK</button> &nbsp;
+<button id="cancelbutton" type="button" class="ecw-input ecw-button" onclick="DeselectCurrentWord();">Cancel</button>
+</td></tr></tbody></table>
+
+</div>
+
+<div id="congratulations" class="ecw-answerbox" style="display:none;">
+<h3>Congratulations!</h3>
+<p>You have completed this <a href="http://www.eclipsecrossword.com" style="color: black; text-decoration:none;">crossword puzzle</a>.
+</p>
+<p>If you would like to be able to create interactive
+<a href="http://www.eclipsecrossword.com" style="color: black; text-decoration:none;">crosswords</a>
+like this yourself, get <a href="http://www.eclipsecrossword.com" onclick="this.target='_blank'">EclipseCrossword</a>
+from Green Eclipse&mdash;it's free!
+</p>
+</div>
+
+</td></tr></table>
+
+<div style="margin-top: 1em;">
+	<button id="checkbutton" type="button" onclick="CheckClick();" style="display: none;">Check puzzle</button>
+</div>
+
+<script type="text/javascript"><!--
+BeginCrossword();
+//-->
+</script>
+
+<!-- Created with EclipseCrossword, (C) Copyright 2000-2013 Green Eclipse.  eclipsecrossword.com -->
+
+</body></html>
+

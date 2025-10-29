@@ -129,24 +129,43 @@ export async function banUser(userId: string, reason: string, bannedBy: string):
 
 export async function getAdminStats() {
   try {
-    const [userCount, roomCount, puzzleCount] = await Promise.all([
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [totalUsers, activeUsers, totalPuzzles, newUsersThisMonth] = await Promise.all([
       prisma.user.count(),
-      prisma.multiplayerRoom.count(),
-      prisma.puzzle.count()
+      prisma.user.count({
+        where: {
+          updatedAt: {
+            gte: thirtyDaysAgo
+          }
+        }
+      }),
+      prisma.puzzle.count(),
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: firstDayOfMonth
+          }
+        }
+      })
     ]);
 
     return {
-      users: userCount,
-      rooms: roomCount,
-      puzzles: puzzleCount,
+      totalUsers,
+      activeUsers,
+      totalPuzzles,
+      newUsersThisMonth,
       timestamp: new Date().toISOString()
     };
   } catch (error) {
     console.error('Error getting admin stats:', error);
     return {
-      users: 0,
-      rooms: 0,
-      puzzles: 0,
+      totalUsers: 0,
+      activeUsers: 0,
+      totalPuzzles: 0,
+      newUsersThisMonth: 0,
       timestamp: new Date().toISOString(),
       error: error instanceof Error ? error.message : 'Unknown error'
     };
@@ -198,29 +217,29 @@ export async function getFeatureFlagHistory(id: string) {
 
 export async function isMaintenanceMode(): Promise<boolean> {
   try {
-    const setting = await prisma.systemSetting.findUnique({
+    const setting = await prisma.systemConfig.findUnique({
       where: { key: 'maintenance_mode' }
     });
-    return setting?.value === 'true';
+    return (setting?.value as string) === 'true';
   } catch (error) {
     console.error('Error checking maintenance mode:', error);
     return false;
   }
 }
 
-export async function setMaintenanceMode(enabled: boolean, message?: string): Promise<boolean> {
+export async function setMaintenanceMode(enabled: boolean, message?: string, updatedBy: string = 'system'): Promise<boolean> {
   try {
-    await prisma.systemSetting.upsert({
+    await prisma.systemConfig.upsert({
       where: { key: 'maintenance_mode' },
-      update: { value: enabled.toString() },
-      create: { key: 'maintenance_mode', value: enabled.toString() }
+      update: { value: enabled.toString() as any, updatedBy },
+      create: { key: 'maintenance_mode', value: enabled.toString() as any, updatedBy }
     });
 
     if (message) {
-      await prisma.systemSetting.upsert({
+      await prisma.systemConfig.upsert({
         where: { key: 'maintenance_message' },
-        update: { value: message },
-        create: { key: 'maintenance_message', value: message }
+        update: { value: message as any, updatedBy },
+        create: { key: 'maintenance_message', value: message as any, updatedBy }
       });
     }
 
@@ -233,10 +252,10 @@ export async function setMaintenanceMode(enabled: boolean, message?: string): Pr
 
 export async function getMaintenanceMessage(): Promise<string> {
   try {
-    const setting = await prisma.systemSetting.findUnique({
+    const setting = await prisma.systemConfig.findUnique({
       where: { key: 'maintenance_message' }
     });
-    return setting?.value || 'System is under maintenance. Please try again later.';
+    return (setting?.value as string) || 'System is under maintenance. Please try again later.';
   } catch (error) {
     console.error('Error getting maintenance message:', error);
     return 'System is under maintenance. Please try again later.';
@@ -245,7 +264,7 @@ export async function getMaintenanceMessage(): Promise<string> {
 
 export async function getSystemConfigsByCategory(category: string) {
   try {
-    const configs = await prisma.systemSetting.findMany({
+    const configs = await prisma.systemConfig.findMany({
       where: { category },
       orderBy: { key: 'asc' }
     });
@@ -256,12 +275,12 @@ export async function getSystemConfigsByCategory(category: string) {
   }
 }
 
-export async function setSystemConfig(key: string, value: string, category?: string) {
+export async function setSystemConfig(key: string, value: string, updatedBy: string, category?: string) {
   try {
-    await prisma.systemSetting.upsert({
+    await prisma.systemConfig.upsert({
       where: { key },
-      update: { value, category },
-      create: { key, value, category }
+      update: { value: value as any, category, updatedBy },
+      create: { key, value: value as any, category: category || 'general', updatedBy }
     });
     return true;
   } catch (error) {
@@ -272,23 +291,63 @@ export async function setSystemConfig(key: string, value: string, category?: str
 
 export async function getUserActivity(userId?: string) {
   try {
-    const whereClause = userId ? { userId } : {};
+    const whereClause = userId ? { actorUserId: userId } : {};
     
-    const activities = await prisma.userActivity.findMany({
-      where: whereClause,
+    // Get recent users
+    const recentUsers = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        role: true,
+        accountStatus: true
+      }
+    });
+
+    // Get recent progress (completed puzzles)
+    const recentProgress = await prisma.userProgress.findMany({
+      where: {
+        completedAt: { not: null }
+      },
+      orderBy: { completedAt: 'desc' },
+      take: 10,
       include: {
         user: {
           select: { id: true, name: true, email: true }
+        },
+        puzzle: {
+          select: { id: true, title: true, difficulty: true }
         }
-      },
-      orderBy: { timestamp: 'desc' },
-      take: 100
+      }
     });
 
-    return activities;
+    // Get audit logs
+    const auditLogs = await prisma.auditLog.findMany({
+      where: whereClause,
+      include: {
+        actor: {
+          select: { id: true, name: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+
+    return {
+      recentUsers,
+      recentProgress,
+      auditLogs
+    };
   } catch (error) {
     console.error('Error getting user activity:', error);
-    return [];
+    return {
+      recentUsers: [],
+      recentProgress: [],
+      auditLogs: []
+    };
   }
 }
 
@@ -299,10 +358,10 @@ export async function getUserDetails(userId: string) {
       include: {
         _count: {
           select: {
-            roomsHosted: true,
-            roomsJoined: true,
-            achievements: true,
-            puzzlesSolved: true
+            hostedRooms: true,
+            userProgress: true,
+            userAchievements: true,
+            notifications: true
           }
         }
       }

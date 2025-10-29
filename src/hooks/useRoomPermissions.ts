@@ -5,34 +5,25 @@ import { RoomPermissionManager, createPermissionContext, RoomAction } from '@/li
 import { ParticipantRole } from '@prisma/client';
 
 interface UseRoomPermissionsProps {
+  userId: string;
+  roomId: string;
   userRole: ParticipantRole | null;
   isHost: boolean;
-  isOnline: boolean;
-  roomStatus: 'WAITING' | 'ACTIVE' | 'COMPLETED' | 'EXPIRED';
-  isPrivate: boolean;
-  hasPassword: boolean;
-  isPremium: boolean;
 }
 
 export function useRoomPermissions({
+  userId,
+  roomId,
   userRole,
-  isHost,
-  isOnline,
-  roomStatus,
-  isPrivate,
-  hasPassword,
-  isPremium
+  isHost
 }: UseRoomPermissionsProps) {
   const permissionContext = useMemo(() => 
     createPermissionContext(
-      userRole,
-      isHost,
-      isOnline,
-      roomStatus,
-      isPrivate,
-      hasPassword,
-      isPremium
-    ), [userRole, isHost, isOnline, roomStatus, isPrivate, hasPassword, isPremium]
+      userId,
+      roomId,
+      userRole || undefined,
+      isHost
+    ), [userId, roomId, userRole, isHost]
   );
 
   const canPerformAction = useMemo(() => {
@@ -101,9 +92,7 @@ export function useRoomPermissions({
     // Context info
     permissionContext,
     userRole,
-    isHost,
-    isOnline,
-    roomStatus
+    isHost
   };
 }
 

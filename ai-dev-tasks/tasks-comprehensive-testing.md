@@ -1,0 +1,198 @@
+# Comprehensive Testing Tasks for Crossword.Network
+
+## Relevant Files
+
+- `src/app/api/admin/users/route.ts` - Admin user management API endpoints
+- `src/app/api/admin/users/route.test.ts` - Unit tests for admin user API
+- `src/app/api/auth/[...nextauth]/authOptions.ts` - Authentication configuration
+- `src/app/api/auth/[...nextauth]/authOptions.test.ts` - Unit tests for auth configuration
+- `src/app/api/multiplayer/rooms/route.ts` - Multiplayer room management API
+- `src/app/api/multiplayer/rooms/route.test.ts` - Unit tests for multiplayer API
+- `src/app/api/puzzles/route.ts` - Puzzle management API
+- `src/app/api/puzzles/route.test.ts` - Unit tests for puzzle API
+- `src/app/api/analytics/route.ts` - Analytics data API
+- `src/app/api/analytics/route.test.ts` - Unit tests for analytics API
+- `src/app/api/achievements/route.ts` - Achievement system API
+- `src/app/api/achievements/route.test.ts` - Unit tests for achievement API
+- `src/app/api/leaderboards/route.ts` - Leaderboard API
+- `src/app/api/leaderboards/route.test.ts` - Unit tests for leaderboard API
+- `src/app/api/notifications/route.ts` - Notification system API
+- `src/app/api/notifications/route.test.ts` - Unit tests for notification API
+- `src/components/admin/UserTable.tsx` - Admin user management component
+- `src/components/admin/UserTable.test.tsx` - Unit tests for UserTable component
+- `src/components/admin/FeatureFlags.tsx` - Feature flag management component
+- `src/components/admin/FeatureFlags.test.tsx` - Unit tests for FeatureFlags component
+- `src/lib/admin.ts` - Admin utility functions
+- `src/lib/admin.test.ts` - Unit tests for admin utilities
+- `src/lib/database.ts` - Database connection utilities
+- `src/lib/database.test.ts` - Unit tests for database utilities
+- `src/lib/auth.ts` - Authentication utilities
+- `src/lib/auth.test.ts` - Unit tests for auth utilities
+- `tests/integration/api.test.ts` - Integration tests for API routes
+- `tests/integration/database.test.ts` - Integration tests for database
+- `tests/integration/auth.test.ts` - Integration tests for authentication
+- `tests/e2e/admin-workflow.test.ts` - End-to-end tests for admin workflows
+- `tests/e2e/user-journey.test.ts` - End-to-end tests for user journeys
+- `tests/performance/load.test.ts` - Performance and load tests
+- `tests/security/security.test.ts` - Security tests
+- `tests/mcp/database-connection.test.ts` - MCP database connection tests
+- `tests/mcp/api-testing.test.ts` - MCP API testing utilities
+- `tests/mcp/feature-testing.test.ts` - MCP feature testing utilities
+
+### Notes
+
+- Unit tests should be placed alongside the code files they are testing
+- Integration tests should be in the `tests/integration/` directory
+- End-to-end tests should be in the `tests/e2e/` directory
+- Performance tests should be in the `tests/performance/` directory
+- Security tests should be in the `tests/security/` directory
+- MCP-specific tests should be in the `tests/mcp/` directory
+- Use `npx jest [optional/path/to/test/file]` to run tests
+- Use MCP tools for database testing, API testing, and feature validation
+
+## Tasks
+
+- [ ] 1.0 Create comprehensive testing infrastructure and setup
+  - [ ] 1.1 Set up Jest configuration for different test types (unit, integration, e2e, performance, security)
+  - [ ] 1.2 Create test utilities and helpers for common testing patterns
+  - [ ] 1.3 Set up MCP tool integration for database and API testing
+  - [ ] 1.4 Create test data factories and fixtures
+  - [ ] 1.5 Set up test database seeding and cleanup utilities
+  - [ ] 1.6 Configure test environment variables and settings
+  - [ ] 1.7 Create test coverage reporting and monitoring
+
+- [ ] 2.0 Test all API routes and endpoints
+  - [ ] 2.1 Test admin API routes (`/api/admin/*`)
+  - [ ] 2.2 Test authentication API routes (`/api/auth/*`)
+  - [ ] 2.3 Test multiplayer API routes (`/api/multiplayer/*`)
+  - [ ] 2.4 Test puzzle management API routes (`/api/puzzles/*`)
+  - [ ] 2.5 Test analytics API routes (`/api/analytics/*`)
+  - [ ] 2.6 Test achievement API routes (`/api/achievements/*`)
+  - [ ] 2.7 Test leaderboard API routes (`/api/leaderboards/*`)
+  - [ ] 2.8 Test notification API routes (`/api/notifications/*`)
+  - [ ] 2.9 Test user management API routes (`/api/users/*`)
+  - [ ] 2.10 Test friend system API routes (`/api/friends/*`)
+  - [ ] 2.11 Test room management API routes (`/api/rooms/*`)
+  - [ ] 2.12 Test pricing API routes (`/api/pricing/*`)
+  - [ ] 2.13 Test dashboard API routes (`/api/dashboard/*`)
+  - [ ] 2.14 Test me API routes (`/api/me/*`)
+  - [ ] 2.15 Test presence API routes (`/api/presence/*`)
+  - [ ] 2.16 Test rewards API routes (`/api/rewards/*`)
+  - [ ] 2.17 Test teams API routes (`/api/teams/*`)
+  - [ ] 2.18 Test challenges API routes (`/api/challenges/*`)
+  - [ ] 2.19 Test cron job API routes (`/api/cron/*`)
+
+- [ ] 3.0 Test admin and superadmin management features
+  - [ ] 3.1 Test admin dashboard functionality
+  - [ ] 3.2 Test user management interface and operations
+  - [ ] 3.3 Test role assignment and permission management
+  - [ ] 3.4 Test feature flag management system
+  - [ ] 3.5 Test system configuration management
+  - [ ] 3.6 Test audit logging and tracking
+  - [ ] 3.7 Test security monitoring and alerts
+  - [ ] 3.8 Test bulk operations and mass user actions
+  - [ ] 3.9 Test system health monitoring dashboard
+  - [ ] 3.10 Test analytics and reporting features
+  - [ ] 3.11 Test session management and monitoring
+  - [ ] 3.12 Test 2FA management and enforcement
+  - [ ] 3.13 Test account suspension and moderation tools
+  - [ ] 3.14 Test puzzle management and content moderation
+  - [ ] 3.15 Test provisioning and system setup tools
+
+- [ ] 4.0 Test database connections and data integrity
+  - [ ] 4.1 Test MariaDB primary database connection
+  - [ ] 4.2 Test MariaDB shadow database connection
+  - [ ] 4.3 Test Prisma ORM functionality and queries
+  - [ ] 4.4 Test database schema migrations and updates
+  - [ ] 4.5 Test data validation and constraints
+  - [ ] 4.6 Test foreign key relationships and cascading deletes
+  - [ ] 4.7 Test database transaction handling and rollbacks
+  - [ ] 4.8 Test database performance and query optimization
+  - [ ] 4.9 Test database backup and recovery procedures
+  - [ ] 4.10 Test data consistency across different models
+  - [ ] 4.11 Test database connection pooling and management
+  - [ ] 4.12 Test database error handling and retry logic
+
+- [ ] 5.0 Test authentication and authorization systems
+  - [ ] 5.1 Test NextAuth.js configuration and setup
+  - [ ] 5.2 Test user registration and login flows
+  - [ ] 5.3 Test password reset and account recovery
+  - [ ] 5.4 Test two-factor authentication (2FA) implementation
+  - [ ] 5.5 Test session management and security
+  - [ ] 5.6 Test role-based access control (RBAC)
+  - [ ] 5.7 Test permission checking and enforcement
+  - [ ] 5.8 Test account suspension and ban functionality
+  - [ ] 5.9 Test OAuth provider integrations
+  - [ ] 5.10 Test JWT token handling and validation
+  - [ ] 5.11 Test security headers and CORS configuration
+  - [ ] 5.12 Test rate limiting and brute force protection
+
+- [ ] 6.0 Test multiplayer and real-time features
+  - [ ] 6.1 Test room creation and management
+  - [ ] 6.2 Test real-time grid synchronization
+  - [ ] 6.3 Test participant management and roles
+  - [ ] 6.4 Test chat system and messaging
+  - [ ] 6.5 Test cursor position tracking
+  - [ ] 6.6 Test conflict resolution and state management
+  - [ ] 6.7 Test room persistence and recovery
+  - [ ] 6.8 Test moderation controls and user management
+  - [ ] 6.9 Test room analytics and statistics
+  - [ ] 6.10 Test WebSocket connections and real-time updates
+  - [ ] 6.11 Test room invitation and join request system
+  - [ ] 6.12 Test room cleanup and expiration
+
+- [ ] 7.0 Test user management and role-based access control
+  - [ ] 7.1 Test user registration and profile creation
+  - [ ] 7.2 Test user role assignment and updates
+  - [ ] 7.3 Test subscription status management
+  - [ ] 7.4 Test account status changes (active, suspended, banned)
+  - [ ] 7.5 Test user progress tracking and statistics
+  - [ ] 7.6 Test achievement system and user rewards
+  - [ ] 7.7 Test friend system and social features
+  - [ ] 7.8 Test notification system and user preferences
+  - [ ] 7.9 Test user data export and privacy controls
+  - [ ] 7.10 Test user account deletion and data retention
+  - [ ] 7.11 Test user search and filtering capabilities
+  - [ ] 7.12 Test bulk user operations and management
+
+- [ ] 8.0 Test analytics and reporting features
+  - [ ] 8.1 Test user analytics and metrics collection
+  - [ ] 8.2 Test puzzle performance analytics
+  - [ ] 8.3 Test multiplayer room analytics
+  - [ ] 8.4 Test system performance metrics
+  - [ ] 8.5 Test revenue and subscription analytics
+  - [ ] 8.6 Test leaderboard calculation and updates
+  - [ ] 8.7 Test achievement progress tracking
+  - [ ] 8.8 Test real-time dashboard updates
+  - [ ] 8.9 Test data aggregation and reporting
+  - [ ] 8.10 Test analytics data export and visualization
+  - [ ] 8.11 Test A/B testing and feature flag analytics
+  - [ ] 8.12 Test custom report generation
+
+- [ ] 9.0 Test system health monitoring and performance
+  - [ ] 9.1 Test API response times and performance
+  - [ ] 9.2 Test database query performance and optimization
+  - [ ] 9.3 Test memory usage and resource management
+  - [ ] 9.4 Test error handling and logging systems
+  - [ ] 9.5 Test system monitoring and alerting
+  - [ ] 9.6 Test load balancing and scalability
+  - [ ] 9.7 Test backup and recovery procedures
+  - [ ] 9.8 Test maintenance mode and system updates
+  - [ ] 9.9 Test cron job execution and scheduling
+  - [ ] 9.10 Test external service integrations
+  - [ ] 9.11 Test system resource monitoring
+  - [ ] 9.12 Test performance regression detection
+
+- [ ] 10.0 Document all issues found and create comprehensive test report
+  - [ ] 10.1 Compile all test results and coverage reports
+  - [ ] 10.2 Document all bugs and issues discovered
+  - [ ] 10.3 Create performance benchmarks and metrics
+  - [ ] 10.4 Document security vulnerabilities and recommendations
+  - [ ] 10.5 Create database integrity and consistency report
+  - [ ] 10.6 Document API endpoint testing results
+  - [ ] 10.7 Create user experience and accessibility report
+  - [ ] 10.8 Document MCP tool testing results
+  - [ ] 10.9 Create recommendations for improvements
+  - [ ] 10.10 Generate final comprehensive testing report
+  - [ ] 10.11 Create test maintenance and update procedures
+  - [ ] 10.12 Document testing best practices and guidelines

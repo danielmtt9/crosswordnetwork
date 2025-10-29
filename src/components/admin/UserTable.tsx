@@ -54,7 +54,7 @@ interface User {
   _count: {
     progress: number;
     hostedRooms: number;
-    roomParticipants: number;
+    notifications: number;
   };
 }
 
@@ -316,7 +316,7 @@ export function UserTable({ users, onUpdateUser, onDeleteUser, isSuperAdmin, loa
                 </div>
                 <div className="flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  <span>Rooms: {user._count.hostedRooms + user._count.roomParticipants}</span>
+                  <span>Rooms: {user._count.hostedRooms}</span>
                 </div>
                 <p className="text-muted-foreground">
                   Last activity: {formatDate(user.updatedAt)}

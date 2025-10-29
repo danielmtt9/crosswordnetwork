@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useSession, signOut } from "next-auth/react";
@@ -33,6 +33,8 @@ import {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { theme, setTheme } = useTheme();
   const { data: session, status } = useSession();
 
@@ -43,6 +45,31 @@ export function Header() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Check admin status when session changes
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch('/api/admin/status');
+          if (response.ok) {
+            const data = await response.json();
+            setIsAdmin(data.isAdmin);
+            setIsSuperAdmin(data.isSuperAdmin);
+          }
+        } catch (error) {
+          console.error('Failed to check admin status:', error);
+          setIsAdmin(false);
+          setIsSuperAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+        setIsSuperAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session?.user?.id]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -118,10 +145,10 @@ export function Header() {
                 <DropdownMenuLabel className="truncate">
                   <div className="flex items-center gap-2">
                     {session.user?.name || session.user?.email}
-                    {(session as any)?.role === 'ADMIN' && (
-                      <Badge variant="secondary" className="text-xs">
+                    {isAdmin && (
+                      <Badge variant={isSuperAdmin ? "default" : "secondary"} className="text-xs">
                         <Shield className="h-3 w-3 mr-1" />
-                        Admin
+                        {isSuperAdmin ? "Super Admin" : "Admin"}
                       </Badge>
                     )}
                   </div>
@@ -136,7 +163,7 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/settings">Settings</Link>
                 </DropdownMenuItem>
-                {(session as any)?.role === 'ADMIN' && (
+                {isAdmin && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin">
                       <Shield className="mr-2 h-4 w-4" />
@@ -258,7 +285,7 @@ export function Header() {
                   >
                     Settings
                   </Link>
-                  {(session as any)?.role === 'ADMIN' && (
+                  {isAdmin && (
                     <Link 
                       href="/admin" 
                       className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"

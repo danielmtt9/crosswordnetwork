@@ -1,4 +1,6 @@
-// Prisma schema for NextAuth (JWT sessions) + credentials + tokens
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider          = "mysql"
@@ -6,85 +8,76 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id                    String    @id @default(cuid())
+  id                    String               @id @default(cuid())
   name                  String?
-  username              String?   @unique // NEW: Unique username
-  email                 String?   @unique
+  username              String?              @unique
+  email                 String?              @unique
   emailVerified         DateTime?
   image                 String?
   password              String?
-  role                  String    @default("FREE") // 'FREE', 'PREMIUM', or 'ADMIN'
-  subscriptionStatus    String    @default("TRIAL") // 'TRIAL', 'ACTIVE', 'CANCELLED', 'EXPIRED'
-  trialEndsAt           DateTime? // 7 days from signup
-  requirePasswordChange Boolean   @default(false)
-  accountStatus         String    @default("ACTIVE") // 'ACTIVE', 'SUSPENDED', 'BANNED', 'DELETED'
+  role                  String               @default("FREE")
+  subscriptionStatus    String               @default("TRIAL")
+  trialEndsAt           DateTime?
+  requirePasswordChange Boolean              @default(false)
+  accountStatus         String               @default("ACTIVE")
   suspendedAt           DateTime?
-  suspendedBy           String?   // User ID who suspended the account
-  suspensionReason      String?   @db.VarChar(500)
-  suspensionExpiresAt   DateTime? // For temporary suspensions
-  twoFactorSecret       String?   // TOTP secret for 2FA
-  twoFactorEnabled      Boolean   @default(false)
-  twoFactorBackupCodes  String?   // JSON array of backup codes
-
-  accounts            Account[]
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  userProgress        UserProgress[]
-  auditLogs           AuditLog[]
-  userAchievements    UserAchievement[]
-  userStats           UserStats?
-  notifications       Notification[]
-  friendships         Friendship[]    @relation("UserFriendships")
-  friendOf            Friendship[]    @relation("FriendOf")
-  invitesSent         RoomInvite[]    @relation("InvitesSent")
-  invitesReceived     RoomInvite[]    @relation("InvitesReceived")
-  joinRequests        JoinRequest[]
-  hostedRooms         MultiplayerRoom[] @relation("HostedRooms")
-  // uploadedPuzzles Puzzle[] @relation("UploadedPuzzles") // Temporarily disabled
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  suspendedBy           String?
+  suspensionReason      String?              @db.VarChar(500)
+  suspensionExpiresAt   DateTime?
+  twoFactorSecret       String?
+  twoFactorEnabled      Boolean              @default(false)
+  twoFactorBackupCodes  String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  accounts              Account[]
+  auditLogs             AuditLog[]
+  passwordResetTokens   PasswordResetToken[]
+  sessions              Session[]
+  friendOf              Friendship[]         @relation("FriendOf")
+  friendships           Friendship[]         @relation("UserFriendships")
+  joinRequests          JoinRequest[]
+  hostedRooms           MultiplayerRoom[]    @relation("HostedRooms")
+  notifications         Notification[]
+  invitesSent           RoomInvite[]         @relation("InvitesSent")
+  invitesReceived       RoomInvite[]         @relation("InvitesReceived")
+  userAchievements      UserAchievement[]
+  userProgress          UserProgress[]
+  userStats             UserStats?
 
   @@index([accountStatus])
   @@index([suspendedAt])
 }
 
 model FeatureFlag {
-  id                String   @id @default(cuid())
-  name              String   @unique
+  id                String               @id @default(cuid())
+  name              String               @unique
   description       String?
-  enabled           Boolean  @default(false)
-  rolloutPercentage Int      @default(0)
-  targetUsers       Json?
-  targetRoles       Json?
-  conditions        Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  enabled           Boolean              @default(false)
+  rolloutPercentage Int                  @default(0)
+  targetUsers       String?              @db.LongText
+  targetRoles       String?              @db.LongText
+  conditions        String?              @db.LongText
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   createdBy         String
-  version           Int      @default(1)
-  
+  version           Int                  @default(1)
   history           FeatureFlagHistory[]
-  
+
   @@index([enabled])
   @@index([createdBy])
 }
 
 model FeatureFlagHistory {
-  id             String      @id @default(cuid())
-  featureFlagId  String
-  action         String
-  previousState  Json?
-  newState       Json?
-  actorUserId    String
-  createdAt      DateTime    @default(now())
-  
-  featureFlag    FeatureFlag @relation(fields: [featureFlagId], references: [id], onDelete: Cascade)
-  
+  id            String      @id @default(cuid())
+  featureFlagId String
+  action        String
+  previousState String?     @db.LongText
+  newState      String?     @db.LongText
+  actorUserId   String
+  createdAt     DateTime    @default(now())
+  featureFlag   FeatureFlag @relation(fields: [featureFlagId], references: [id], onDelete: Cascade)
+
   @@index([featureFlagId])
   @@index([actorUserId])
   @@index([createdAt])
@@ -93,34 +86,33 @@ model FeatureFlagHistory {
 model SystemConfig {
   id          String   @id @default(cuid())
   key         String   @unique
-  value       Json
+  value       String   @db.LongText
   description String?
   category    String   @default("general")
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   updatedBy   String
-  
+
   @@index([category])
   @@index([isPublic])
 }
 
 model ABTest {
-  id              String   @id @default(cuid())
-  name            String   @unique
-  description     String
-  status          String   @default("DRAFT") // 'DRAFT', 'ACTIVE', 'PAUSED', 'COMPLETED'
-  variants        Json     // Array of ABTestVariant
-  targetAudience  Json     // ABTestAudience object
-  metrics         Json     // ABTestMetrics object
-  startDate       DateTime?
-  endDate         DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String
-  
-  results         ABTestResult[]
-  
+  id             String         @id @default(cuid())
+  name           String         @unique
+  description    String
+  status         String         @default("DRAFT")
+  variants       String         @db.LongText
+  targetAudience String         @db.LongText
+  metrics        String         @db.LongText
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  createdBy      String
+  results        ABTestResult[]
+
   @@index([status])
   @@index([createdBy])
 }
@@ -131,11 +123,10 @@ model ABTestResult {
   userId           String
   variant          String
   assignedAt       DateTime @default(now())
-  conversionEvents Json     @default("[]") // Array of ABTestConversion
-  metrics          Json     @default("{}") // Record<string, number>
-  
+  conversionEvents String   @default("[]") @db.LongText
+  metrics          String   @default("{}") @db.LongText
   test             ABTest   @relation(fields: [testId], references: [id], onDelete: Cascade)
-  
+
   @@index([testId])
   @@index([userId])
   @@index([assignedAt])
@@ -154,20 +145,20 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId], map: "Account_userId_fkey")
 }
 
-// Using JWT sessions; keep model here for future switch if needed
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId], map: "Session_userId_fkey")
 }
 
 model VerificationToken {
@@ -178,18 +169,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Custom password reset token store
 model PasswordResetToken {
   id        String   @id @default(cuid())
   userId    String
   token     String   @unique
   expiresAt DateTime
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "PasswordResetToken_userId_fkey")
 }
 
-// Optional login attempt tracking for lockout/rate limiting
 model LoginAttempt {
   id        String   @id @default(cuid())
   email     String
@@ -198,32 +188,27 @@ model LoginAttempt {
   createdAt DateTime @default(now())
 }
 
-// ====== PUZZLES ======
-// Using existing database structure
 model Puzzle {
-  id                   Int       @id @default(autoincrement())
-  title                String    @db.VarChar(255)
-  description          String?   @db.Text
-  filename             String    @db.VarChar(255)
-  original_filename    String    @db.VarChar(255)
-  file_path            String    @db.VarChar(500)
-  tier                 String?   @db.VarChar(10) // 'free' or 'premium'
-  category             String?   @db.VarChar(100)
-  difficulty           String?   @db.VarChar(10) // 'easy', 'medium', 'hard'
+  id                   Int               @id @default(autoincrement())
+  title                String            @db.VarChar(255)
+  description          String?           @db.Text
+  filename             String            @db.VarChar(255)
+  original_filename    String            @db.VarChar(255)
+  file_path            String            @db.VarChar(500)
+  tier                 String?           @db.VarChar(10)
+  category             String?           @db.VarChar(100)
+  difficulty           String?           @db.VarChar(10)
   uploaded_by          String?
-  upload_date          DateTime? @default(now())
-  is_active            Boolean?  @default(true)
-  play_count           Int?      @default(0)
-  completion_rate      Decimal?  @default(0.00) @db.Decimal(5, 2)
-  estimated_solve_time Int?      @default(15)
-  avg_solve_time       Decimal?  @default(0.00) @db.Decimal(5, 2)
-  best_score           Int?      @default(0)
-  grid_width           Int? // Grid width in cells (e.g., 15, 21, 35)
-  grid_height          Int? // Grid height in cells (e.g., 15, 21, 35)
-  tags                 String?   @db.Text // JSON array: ["multiplayer", "daily", "themed", etc.]
-
-  // Note: Relation temporarily disabled due to existing data constraints
-  // uploader User? @relation("UploadedPuzzles", fields: [uploaded_by], references: [id])
+  upload_date          DateTime?         @default(now())
+  is_active            Boolean?          @default(true)
+  play_count           Int?              @default(0)
+  completion_rate      Decimal?          @default(0.00) @db.Decimal(5, 2)
+  estimated_solve_time Int?              @default(15)
+  avg_solve_time       Decimal?          @default(0.00) @db.Decimal(5, 2)
+  best_score           Int?              @default(0)
+  grid_width           Int?
+  grid_height          Int?
+  tags                 String?           @db.Text
   multiplayerRooms     MultiplayerRoom[]
 
   @@map("puzzles")
@@ -233,21 +218,24 @@ model UserProgress {
   id                    String    @id @default(cuid())
   userId                String
   puzzleId              Int
-  completedCells        String?   @db.Text // JSON string of cells/progress
+  completedCells        String?   @db.Text
   hintsUsed             Int       @default(0)
   isCompleted           Boolean   @default(false)
   lastPlayedAt          DateTime  @default(now())
   completedAt           DateTime?
-  completionTimeSeconds Int? // Time taken to complete in seconds
-  score                 Int       @default(0) // Calculated score
-  startedAt             DateTime  @default(now()) // When user first opened puzzle
-  timesPlayed           Int       @default(1) // NEW: Track number of attempts
-  bestTimeSeconds       Int? // NEW: Best completion time
-  totalAccuracy         Float?    @default(100.0) // NEW: Average accuracy across attempts
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completionTimeSeconds Int?
+  score                 Int       @default(0)
+  startedAt             DateTime  @default(now())
+  timesPlayed           Int       @default(1)
+  bestTimeSeconds       Int?
+  totalAccuracy         Float?    @default(100)
+  autoSaveCount         Int       @default(0)
+  lastAutoSave          DateTime?
+  saveHistory           String?   @db.LongText
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, puzzleId])
+  @@index([lastAutoSave])
   @@map("user_progress")
 }
 
@@ -261,63 +249,57 @@ model AuditLog {
   after       String?  @db.Text
   ip          String?  @db.VarChar(64)
   createdAt   DateTime @default(now())
-
-  actor User @relation(fields: [actorUserId], references: [id])
+  actor       User     @relation(fields: [actorUserId], references: [id])
 
   @@index([actorUserId])
   @@index([entityType, entityId])
   @@index([createdAt])
 }
 
-// ===== MULTIPLAYER ROOMS =====
 model MultiplayerRoom {
-  id              String     @id @default(cuid())
-  roomCode        String     @unique @db.Char(6) // 6-character join code
-  name            String?    @db.VarChar(100)
-  description     String?    @db.VarChar(200)
+  id              String             @id @default(cuid())
+  roomCode        String             @unique @db.Char(6)
+  name            String?            @db.VarChar(100)
+  description     String?            @db.VarChar(200)
   puzzleId        Int
   hostUserId      String
-  maxPlayers      Int        @default(4)
-  isPrivate       Boolean    @default(false)
-  password        String?    @db.VarChar(255) // Hashed password for private rooms
-  allowSpectators Boolean    @default(true)
-  autoStart       Boolean    @default(false)
-  timeLimit       Int?       // in minutes, null for no limit
-  difficulty      String?    @db.VarChar(20) // 'EASY', 'MEDIUM', 'HARD', null for any
-  tags            String?    @db.Text // JSON array of tags
-  status          RoomStatus @default(WAITING)
-  gridState       String?    @db.Text // JSON: shared grid state
-  createdAt       DateTime   @default(now())
+  maxPlayers      Int                @default(4)
+  isPrivate       Boolean            @default(false)
+  password        String?            @db.VarChar(255)
+  allowSpectators Boolean            @default(true)
+  autoStart       Boolean            @default(false)
+  timeLimit       Int?
+  difficulty      String?            @db.VarChar(20)
+  tags            String?            @db.Text
+  status          RoomStatus         @default(WAITING)
+  gridState       String?            @db.Text
+  createdAt       DateTime           @default(now())
   startedAt       DateTime?
   completedAt     DateTime?
-  expiresAt       DateTime? // Auto-expire after 7 days
-  lastActivityAt  DateTime   @default(now()) // Last activity timestamp
-  isPersistent    Boolean    @default(true) // Whether room persists for 7 days
-  persistenceDays Int        @default(7) // Number of days to persist
-  autoCleanup     Boolean    @default(true) // Auto-cleanup expired rooms
-
-  puzzle      Puzzle     @relation(fields: [puzzleId], references: [id])
-  hostUser    User       @relation("HostedRooms", fields: [hostUserId], references: [id])
-  participants RoomParticipant[]
-  messages     RoomMessage[]
-  mutedUsers   RoomMutedUser[]
-  bannedUsers  RoomBannedUser[]
-  stateVersions RoomStateVersion[]
-  invites      RoomInvite[]
-  joinRequests JoinRequest[]
+  expiresAt       DateTime?
+  autoCleanup     Boolean            @default(true)
+  isPersistent    Boolean            @default(true)
+  lastActivityAt  DateTime           @default(now())
+  persistenceDays Int                @default(7)
+  lastSyncedAt    DateTime?
+  autoSaveEnabled Boolean            @default(true)
+  saveInterval    Int                @default(30000)
+  joinRequests    JoinRequest[]
+  hostUser        User               @relation("HostedRooms", fields: [hostUserId], references: [id])
+  puzzle          Puzzle             @relation(fields: [puzzleId], references: [id])
+  bannedUsers     RoomBannedUser[]
+  invites         RoomInvite[]
+  messages        RoomMessage[]
+  mutedUsers      RoomMutedUser[]
+  participants    RoomParticipant[]
+  stateVersions   RoomStateVersion[]
 
   @@index([roomCode])
   @@index([status])
   @@index([hostUserId])
   @@index([createdAt])
+  @@index([puzzleId], map: "multiplayer_rooms_puzzleId_fkey")
   @@map("multiplayer_rooms")
-}
-
-enum RoomStatus {
-  WAITING // Lobby, players joining
-  ACTIVE // Game in progress
-  COMPLETED // Puzzle finished
-  EXPIRED // Auto-closed after timeout
 }
 
 model RoomParticipant {
@@ -327,12 +309,11 @@ model RoomParticipant {
   role           ParticipantRole @default(PLAYER)
   displayName    String          @db.VarChar(100)
   avatarUrl      String?         @db.VarChar(255)
-  cursorPosition String?         @db.VarChar(20) // JSON: { x, y, cellId }
+  cursorPosition String?         @db.VarChar(20)
   isOnline       Boolean         @default(true)
   joinedAt       DateTime        @default(now())
   leftAt         DateTime?
-
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room           MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
   @@index([roomId])
@@ -340,26 +321,19 @@ model RoomParticipant {
   @@map("room_participants")
 }
 
-enum ParticipantRole {
-  HOST // Premium user who created room
-  PLAYER // Premium user who can edit
-  SPECTATOR // Free user, view-only
-}
-
 model RoomMessage {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   roomId    String
   userId    String
-  userName  String   @db.VarChar(100)
-  content   String   @db.VarChar(500)
-  type      String   @default("text") @db.VarChar(20) // 'text', 'system', 'achievement', 'join', 'leave', 'kick', 'role_change', 'session_start', 'session_end', 'hint_used', 'puzzle_complete'
-  metadata  String?  @db.Text // JSON: additional data for different message types
-  createdAt DateTime @default(now())
-  isDeleted Boolean  @default(false)
-  deletedBy String?  @db.VarChar(100)
+  userName  String          @db.VarChar(100)
+  content   String          @db.VarChar(500)
+  type      String          @default("text") @db.VarChar(20)
+  metadata  String?         @db.Text
+  createdAt DateTime        @default(now())
+  isDeleted Boolean         @default(false)
+  deletedBy String?         @db.VarChar(100)
   deletedAt DateTime?
-
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room      MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@index([createdAt])
@@ -368,17 +342,16 @@ model RoomMessage {
 }
 
 model RoomMutedUser {
-  id              String   @id @default(cuid())
+  id              String          @id @default(cuid())
   roomId          String
   userId          String
-  userName        String   @db.VarChar(100)
+  userName        String          @db.VarChar(100)
   mutedBy         String
-  mutedByUserName String   @db.VarChar(100)
+  mutedByUserName String          @db.VarChar(100)
   mutedUntil      DateTime
-  reason          String?  @db.VarChar(200)
-  createdAt       DateTime @default(now())
-
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  reason          String?         @db.VarChar(200)
+  createdAt       DateTime        @default(now())
+  room            MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@index([userId])
@@ -387,17 +360,16 @@ model RoomMutedUser {
 }
 
 model RoomBannedUser {
-  id              String   @id @default(cuid())
-  roomId          String
-  userId          String
-  userName        String   @db.VarChar(100)
-  bannedBy        String
-  bannedByUserName String   @db.VarChar(100)
-  bannedUntil     DateTime
-  reason          String?  @db.VarChar(200)
-  createdAt       DateTime @default(now())
-
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id               String          @id @default(cuid())
+  roomId           String
+  userId           String
+  userName         String          @db.VarChar(100)
+  bannedBy         String
+  bannedByUserName String          @db.VarChar(100)
+  bannedUntil      DateTime
+  reason           String?         @db.VarChar(200)
+  createdAt        DateTime        @default(now())
+  room             MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@index([userId])
@@ -406,14 +378,13 @@ model RoomBannedUser {
 }
 
 model RoomStateVersion {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   roomId    String
-  stateData String   @db.Text // JSON: complete room state
+  stateData String          @db.Text
   version   Int
-  checksum  String   @db.VarChar(32) // For state validation
-  createdAt DateTime @default(now())
-
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  checksum  String          @db.VarChar(32)
+  createdAt DateTime        @default(now())
+  room      MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@index([createdAt])
@@ -421,21 +392,19 @@ model RoomStateVersion {
   @@map("room_state_versions")
 }
 
-// ===== ACHIEVEMENTS SYSTEM =====
 model Achievement {
-  id          String   @id @default(cuid())
-  key         String   @unique @db.VarChar(64) // e.g., 'first_puzzle', 'streak_7'
-  name        String   @db.VarChar(120)
-  description String?  @db.VarChar(300)
-  category    AchievementCategory
-  tier        AchievementTier @default(BRONZE)
-  points      Int      @default(0)
-  iconName    String   @db.VarChar(50) // Lucide icon name
-  requirement String   @db.Text // JSON: { type, threshold, meta }
-  isSecret    Boolean  @default(false)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-
+  id               String              @id @default(cuid())
+  key              String              @unique @db.VarChar(64)
+  name             String              @db.VarChar(120)
+  description      String?             @db.VarChar(300)
+  category         AchievementCategory
+  tier             AchievementTier     @default(BRONZE)
+  points           Int                 @default(0)
+  iconName         String              @db.VarChar(50)
+  requirement      String              @db.Text
+  isSecret         Boolean             @default(false)
+  order            Int                 @default(0)
+  createdAt        DateTime            @default(now())
   userAchievements UserAchievement[]
 
   @@index([category])
@@ -444,14 +413,157 @@ model Achievement {
   @@map("achievements")
 }
 
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  progress      Int         @default(0)
+  earnedAt      DateTime?
+  notified      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([earnedAt])
+  @@index([achievementId], map: "user_achievements_achievementId_fkey")
+  @@map("user_achievements")
+}
+
+model LeaderboardEntry {
+  id          String            @id @default(cuid())
+  period      LeaderboardPeriod
+  scope       LeaderboardScope
+  scopeId     String?           @db.VarChar(50)
+  userId      String
+  userName    String            @db.VarChar(100)
+  userAvatar  String?           @db.VarChar(255)
+  metric      String            @db.VarChar(50)
+  value       Int
+  rank        Int?
+  periodStart DateTime
+  periodEnd   DateTime
+  computedAt  DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([period, scope, scopeId, metric, userId])
+  @@index([period, scope, metric, rank])
+  @@index([userId])
+  @@index([periodStart, periodEnd])
+  @@map("leaderboard_entries")
+}
+
+model UserStats {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  totalPuzzlesStarted   Int       @default(0)
+  totalPuzzlesCompleted Int       @default(0)
+  totalPlayTime         Int       @default(0)
+  averageAccuracy       Float     @default(100)
+  averageCompletionTime Float     @default(0)
+  currentStreak         Int       @default(0)
+  longestStreak         Int       @default(0)
+  lastPlayedDate        DateTime?
+  totalScore            Int       @default(0)
+  achievementPoints     Int       @default(0)
+  globalRank            Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([globalRank])
+  @@index([totalScore])
+  @@map("user_stats")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String   @db.Text
+  actionUrl String?
+  metadata  String?  @db.LongText
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  userId      String
+  friendId    String
+  status      String   @default("PENDING")
+  initiatedBy String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  friend      User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([friendId], map: "friendships_friendId_fkey")
+  @@map("friendships")
+}
+
+model RoomInvite {
+  id          String          @id @default(cuid())
+  roomId      String
+  invitedById String
+  inviteeId   String
+  status      String          @default("PENDING")
+  message     String?         @db.Text
+  expiresAt   DateTime
+  createdAt   DateTime        @default(now())
+  invitedBy   User            @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitee     User            @relation("InvitesReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+  room        MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, inviteeId])
+  @@index([invitedById], map: "room_invites_invitedById_fkey")
+  @@index([inviteeId], map: "room_invites_inviteeId_fkey")
+  @@map("room_invites")
+}
+
+model JoinRequest {
+  id        String          @id @default(cuid())
+  roomId    String
+  userId    String
+  message   String?         @db.Text
+  status    String          @default("PENDING")
+  createdAt DateTime        @default(now())
+  room      MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@index([userId], map: "join_requests_userId_fkey")
+  @@map("join_requests")
+}
+
+enum RoomStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum ParticipantRole {
+  HOST
+  PLAYER
+  SPECTATOR
+}
+
 enum AchievementCategory {
-  COMPLETION  // Complete X puzzles
-  SPEED       // Fast completion times
-  STREAK      // Consecutive days
-  ACCURACY    // High accuracy rates
-  SOCIAL      // Multiplayer participation
-  MASTERY     // Difficulty-based
-  SPECIAL     // Seasonal/limited
+  COMPLETION
+  SPEED
+  STREAK
+  ACCURACY
+  SOCIAL
+  MASTERY
+  SPECIAL
 }
 
 enum AchievementTier {
@@ -462,48 +574,6 @@ enum AchievementTier {
   DIAMOND
 }
 
-model UserAchievement {
-  id            String      @id @default(cuid())
-  userId        String
-  achievementId String
-  progress      Int         @default(0) // For incremental achievements
-  earnedAt      DateTime?   // Null if not yet earned
-  notified      Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, achievementId])
-  @@index([userId])
-  @@index([earnedAt])
-  @@map("user_achievements")
-}
-
-// ===== LEADERBOARDS =====
-model LeaderboardEntry {
-  id         String            @id @default(cuid())
-  period     LeaderboardPeriod
-  scope      LeaderboardScope
-  scopeId    String?           @db.VarChar(50) // puzzleId for PUZZLE scope
-  userId     String
-  userName   String            @db.VarChar(100)
-  userAvatar String?           @db.VarChar(255)
-  metric     String            @db.VarChar(50) // 'fastest_time', 'highest_score', 'most_completed'
-  value      Int               // Metric value (time in seconds, score, count)
-  rank       Int?
-  periodStart DateTime
-  periodEnd   DateTime
-  computedAt  DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  @@unique([period, scope, scopeId, metric, userId])
-  @@index([period, scope, metric, rank])
-  @@index([userId])
-  @@index([periodStart, periodEnd])
-  @@map("leaderboard_entries")
-}
-
 enum LeaderboardPeriod {
   DAILY
   WEEKLY
@@ -512,98 +582,7 @@ enum LeaderboardPeriod {
 }
 
 enum LeaderboardScope {
-  GLOBAL      // Across all puzzles
-  PUZZLE      // Specific puzzle
-  DIFFICULTY  // By difficulty level
-}
-
-// ===== USER STATS SUMMARY (for profile) =====
-model UserStats {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  totalPuzzlesStarted   Int      @default(0)
-  totalPuzzlesCompleted Int      @default(0)
-  totalPlayTime         Int      @default(0) // Total seconds across all puzzles
-  averageAccuracy       Float    @default(100.0)
-  averageCompletionTime Float    @default(0.0) // Average seconds
-  currentStreak         Int      @default(0) // Consecutive days
-  longestStreak         Int      @default(0)
-  lastPlayedDate        DateTime?
-  totalScore            Int      @default(0)
-  achievementPoints     Int      @default(0)
-  globalRank            Int?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([globalRank])
-  @@index([totalScore])
-  @@map("user_stats")
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String   // FRIEND_REQUEST, ROOM_INVITE, JOIN_REQUEST, etc.
-  title     String
-  message   String   @db.Text
-  actionUrl String?
-  metadata  Json?    // Additional data (friendId, roomId, etc.)
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId, isRead])
-  @@map("notifications")
-}
-
-model Friendship {
-  id          String   @id @default(cuid())
-  userId      String
-  friendId    String
-  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, BLOCKED
-  initiatedBy String   // userId of who sent the request
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
-  friend User @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, friendId])
-  @@map("friendships")
-}
-
-model RoomInvite {
-  id          String   @id @default(cuid())
-  roomId      String
-  invitedById String   // User who sent invite
-  inviteeId   String   // User being invited
-  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, EXPIRED
-  message     String?  @db.Text
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
-  
-  room      MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  invitedBy User            @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
-  invitee   User            @relation("InvitesReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
-  
-  @@unique([roomId, inviteeId])
-  @@map("room_invites")
-}
-
-model JoinRequest {
-  id        String   @id @default(cuid())
-  roomId    String
-  userId    String
-  message   String?  @db.Text
-  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  createdAt DateTime @default(now())
-  
-  room MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([roomId, userId])
-  @@map("join_requests")
+  GLOBAL
+  PUZZLE
+  DIFFICULTY
 }

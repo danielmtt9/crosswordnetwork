@@ -43,16 +43,14 @@ export default function RoomPage({ params }: RoomPageProps) {
   // Client-side prediction system
   const { predictions, rollbacks, clearOldRollbacks } = useClientPrediction();
   
-  // Chat system
-  const {
-    messages,
-    mutedUsers,
-    isLoading: chatLoading,
-    sendMessage,
-    deleteMessage,
-    muteUser,
-    unmuteUser
-  } = useRoomChat(room?.id || '', session?.userId || '');
+  // Chat system - provide empty arrays/functions for now
+  // useRoomChat is handled by Socket.IO connection in useSocket hook
+  const messages: any[] = [];
+  const mutedUsers: any[] = [];
+  const sendMessage = async () => {};
+  const deleteMessage = async () => {};
+  const muteUser = async () => {};
+  const unmuteUser = async () => {};
 
   // Determine user role
   const getUserRole = () => {
@@ -74,13 +72,10 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   // Room permissions
   const permissions = useRoomPermissions({
+    userId: session?.userId || '',
+    roomId: room?.id || '',
     userRole,
-    isHost,
-    isOnline,
-    roomStatus: room?.status || 'WAITING',
-    isPrivate: room?.isPrivate || false,
-    hasPassword: !!room?.password,
-    isPremium: false // TODO: Get from user data
+    isHost
   });
 
   // Host control functions
@@ -261,9 +256,33 @@ export default function RoomPage({ params }: RoomPageProps) {
     }
   }, [status, router]);
 
-  // Fetch room data
+  // Fetch room data and join room
   useEffect(() => {
     const fetchRoom = async () => {
+      // First, try to join the room
+      try {
+        const joinResponse = await fetch(`/api/multiplayer/rooms/${resolvedParams.roomCode}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        
+        // If join fails with 400 and user is already in room, that's okay
+        if (!joinResponse.ok) {
+          const error = await joinResponse.json();
+          // Only throw error if it's not "already in room"
+          if (error.error && !error.error.includes('already in this room')) {
+            console.error('Failed to join room:', error);
+            alert(error.error || 'Failed to join room');
+            router.push('/multiplayer');
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error joining room:', err);
+      }
+      
+      // Then fetch room details
       const response = await fetch(`/api/multiplayer/rooms/${resolvedParams.roomCode}`);
       if (response.ok) {
         const data = await response.json();
@@ -628,40 +647,58 @@ export default function RoomPage({ params }: RoomPageProps) {
             )}
 
             {/* Clues - For all users */}
-            <Card>
-              <CardHeader>
+            <Card className="flex flex-col" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+              <CardHeader className="flex-shrink-0">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Clues
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="flex-1 overflow-hidden">
+                <div className="space-y-4 h-full overflow-y-auto pr-2">
                   {/* Across Clues */}
                   <div>
-                    <h4 className="text-sm font-medium mb-2 text-blue-600">Across</h4>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                    <h4 className="text-sm font-semibold mb-3 text-blue-600 dark:text-blue-400 flex items-center gap-2 sticky top-0 bg-background pb-2">
+                      <span className="bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded">Across</span>
+                    </h4>
+                    <div className="space-y-2">
                       {clues.across.map((clue) => (
-                        <div key={clue.num} className="text-xs">
-                          <span className="font-medium text-blue-600">{clue.num}.</span>
-                          <span className="ml-1">{clue.clue}</span>
+                        <div 
+                          key={clue.num} 
+                          className="text-sm p-2 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors cursor-pointer border-l-2 border-transparent hover:border-blue-500"
+                        >
+                          <span className="font-bold text-blue-600 dark:text-blue-400 min-w-[2rem] inline-block">{clue.num}.</span>
+                          <span className="ml-2 text-foreground">{clue.clue}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                   
                   {/* Down Clues */}
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 text-green-600">Down</h4>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-semibold mb-3 text-green-600 dark:text-green-400 flex items-center gap-2 sticky top-0 bg-background pb-2">
+                      <span className="bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded">Down</span>
+                    </h4>
+                    <div className="space-y-2">
                       {clues.down.map((clue) => (
-                        <div key={clue.num} className="text-xs">
-                          <span className="font-medium text-green-600">{clue.num}.</span>
-                          <span className="ml-1">{clue.clue}</span>
+                        <div 
+                          key={clue.num} 
+                          className="text-sm p-2 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors cursor-pointer border-l-2 border-transparent hover:border-green-500"
+                        >
+                          <span className="font-bold text-green-600 dark:text-green-400 min-w-[2rem] inline-block">{clue.num}.</span>
+                          <span className="ml-2 text-foreground">{clue.clue}</span>
                         </div>
                       ))}
                     </div>
                   </div>
+                  
+                  {/* Empty state */}
+                  {clues.across.length === 0 && clues.down.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Loading clues...</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

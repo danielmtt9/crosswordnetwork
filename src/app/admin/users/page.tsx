@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSession } from "next-auth/react";
-import { isSuperAdmin } from "@/lib/superAdmin";
+// Removed direct import of isSuperAdmin - now using API route
 import Link from "next/link";
 import { BulkUserOperations } from "@/components/admin/BulkUserOperations";
 
@@ -57,7 +57,7 @@ interface User {
   _count: {
     progress: number;
     hostedRooms: number;
-    roomParticipants: number;
+    notifications: number;
   };
 }
 
@@ -105,8 +105,16 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const checkSuperAdminStatus = async () => {
       if (currentUserEmail) {
-        const isSuper = await isSuperAdmin(currentUserEmail);
-        setIsCurrentUserSuperAdmin(isSuper);
+        try {
+          const response = await fetch('/api/admin/status');
+          if (response.ok) {
+            const data = await response.json();
+            setIsCurrentUserSuperAdmin(data.isSuperAdmin);
+          }
+        } catch (error) {
+          console.error('Failed to check super admin status:', error);
+          setIsCurrentUserSuperAdmin(false);
+        }
       }
     };
     checkSuperAdminStatus();
@@ -152,12 +160,12 @@ export default function AdminUsersPage() {
   };
 
   const handleRoleFilter = (value: string) => {
-    setRoleFilter(value);
+    setRoleFilter(value === "all" ? "" : value);
     setCurrentPage(1);
   };
 
   const handleStatusFilter = (value: string) => {
-    setStatusFilter(value);
+    setStatusFilter(value === "all" ? "" : value);
     setCurrentPage(1);
   };
 
@@ -322,12 +330,12 @@ export default function AdminUsersPage() {
 
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Select value={roleFilter} onValueChange={handleRoleFilter}>
+                <Select value={roleFilter || "all"} onValueChange={handleRoleFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="All roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All roles</SelectItem>
+                    <SelectItem value="all">All roles</SelectItem>
                     <SelectItem value="FREE">Free</SelectItem>
                     <SelectItem value="PREMIUM">Premium</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
@@ -337,12 +345,12 @@ export default function AdminUsersPage() {
 
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={statusFilter} onValueChange={handleStatusFilter}>
+                <Select value={statusFilter || "all"} onValueChange={handleStatusFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="TRIAL">Trial</SelectItem>
                     <SelectItem value="ACTIVE">Active</SelectItem>
                     <SelectItem value="INACTIVE">Inactive</SelectItem>
@@ -469,7 +477,7 @@ export default function AdminUsersPage() {
                     <div className="col-span-2">
                       <div className="text-sm">
                         <p>Puzzles: {user._count.progress}</p>
-                        <p>Rooms: {user._count.hostedRooms + user._count.roomParticipants}</p>
+                        <p>Rooms: {user._count.hostedRooms}</p>
                         <p className="text-muted-foreground">
                           Last activity: {formatDate(user.updatedAt)}
                         </p>
