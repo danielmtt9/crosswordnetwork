@@ -15,7 +15,7 @@ import { usePuzzleStore } from "@/lib/stores/puzzleStore";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useIframeMessage } from "@/hooks/useIframeMessage";
 import { AdaptiveLayout } from "@/components/layouts/AdaptiveLayout";
-import { SaveIndicator } from "@/components/puzzle/SaveIndicator";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { PuzzleArea } from "@/components/puzzle/PuzzleArea";
 import { HintsMenu } from "@/components/puzzle/HintsMenu";
 import { CluesPanel } from "@/components/puzzle/CluesPanel";
@@ -24,6 +24,8 @@ import { extractCluesWithRetry, formatCluesForDisplay } from "@/lib/clueExtracti
 import { isMultiplayerOnly } from "@/lib/puzzleTags";
 import { useRouter } from "next/navigation";
 import { useDeviceType } from "@/hooks/useDeviceType";
+import { CompletionModal } from "@/components/CompletionModal";
+import { useToast, ToastContainer } from "@/components/Toast";
 
 interface PuzzleData {
   id: number;
@@ -92,6 +94,8 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
   const [clues, setClues] = useState<{ across: any[]; down: any[] }>({ across: [], down: [] });
   const [progressPercent, setProgressPercent] = useState(0);
   const [iframeHeight, setIframeHeight] = useState(600);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const toast = useToast();
 
   // Zustand store
   const {
@@ -135,8 +139,14 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
       markSaved();
     },
     isDirty,
-    onSuccess: () => console.log('[PuzzlePage] Auto-save successful'),
-    onError: (error) => console.error('[PuzzlePage] Auto-save failed:', error),
+    onSuccess: () => {
+      console.log('[PuzzlePage] Auto-save successful');
+      toast.success('Progress saved');
+    },
+    onError: (error) => {
+      console.error('[PuzzlePage] Auto-save failed:', error);
+      toast.error('Failed to save progress. Changes will be saved when connection is restored.');
+    },
   });
 
   // Iframe messaging
@@ -165,6 +175,7 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
             message.data.completionTime || 0,
             message.data.score || 0
           );
+          setShowCompletionModal(true);
           break;
 
         case 'hint_used':
@@ -282,9 +293,9 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+      const errorData = await response.json();
         if (response.status === 403) {
-          alert(errorData.message);
+          toast.error(errorData.message || 'Hint limit reached');
           return;
         }
         throw new Error(errorData.error || 'Failed to use hint');
@@ -307,7 +318,7 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
       }
     } catch (err) {
       console.error('[PuzzlePage] Hint error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to use hint');
+      toast.error(err instanceof Error ? err.message : 'Failed to use hint');
     }
   };
 
@@ -419,7 +430,12 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
               downClues={clues.down}
               onClueClick={(clue) => {
                 console.log('[PuzzlePage] Clue clicked:', clue);
-                // Could send focus command to iframe
+                // Send focus command to iframe
+                sendCommand({ 
+                  type: 'focus_clue', 
+                  clueNumber: clue.number,
+                  direction: clue.number < 100 ? 'across' : 'down' 
+                });
               }}
             />
           }
@@ -457,6 +473,38 @@ export default function PuzzlePage({ params }: PuzzlePageProps) {
           }
         />
       </div>
+
+      {/* Completion Modal */}
+      {showCompletionModal && puzzle && (
+        <CompletionModal
+          isOpen={showCompletionModal}
+          onClose={() => setShowCompletionModal(false)}
+          puzzleTitle={puzzle.title}
+          completionTime={startTime ? Math.floor((Date.now() - startTime) / 1000) : 0}
+          score={1000} // Score calculation would come from store
+          hintsUsed={hintsUsed}
+          difficulty={puzzle.difficulty || "medium"}
+          onPlayAgain={() => {
+            setShowCompletionModal(false);
+            // Reset puzzle state
+            setPuzzleStore(puzzle.id);
+            markStarted();
+            window.location.reload();
+          }}
+          onShare={() => {
+            const time = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            navigator.clipboard.writeText(
+              `I just completed "${puzzle.title}" in ${minutes}:${seconds.toString().padStart(2, '0')}!`
+            );
+            toast.success('Share text copied to clipboard!');
+          }}
+        />
+      )}
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.dismissToast} />
     </div>
   );
 }

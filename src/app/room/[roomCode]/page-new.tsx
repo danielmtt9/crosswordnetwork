@@ -11,7 +11,7 @@ import { useAutoSave } from "@/hooks/useAutoSave";
 import { useIframeMessage } from "@/hooks/useIframeMessage";
 import { useDeviceType } from "@/hooks/useDeviceType";
 import { AdaptiveLayout } from "@/components/layouts/AdaptiveLayout";
-import { SaveIndicator } from "@/components/puzzle/SaveIndicator";
+import { SaveIndicator } from "@/components/SaveIndicator";
 import { PuzzleArea } from "@/components/puzzle/PuzzleArea";
 import { HintsMenu } from "@/components/puzzle/HintsMenu";
 import { CluesPanel } from "@/components/puzzle/CluesPanel";
@@ -20,6 +20,7 @@ import { RoomParticipantList } from "@/components/RoomParticipantList";
 import { extractCluesWithRetry, formatCluesForDisplay } from "@/lib/clueExtraction";
 import { ConflictNotification, useConflictNotification } from "@/components/ConflictNotification";
 import { HostChangeNotification, useHostChangeNotification } from "@/components/HostChangeNotification";
+import { useToast, ToastContainer } from "@/components/Toast";
 
 interface RoomPageProps {
   params: Promise<{ roomCode: string }>;
@@ -45,6 +46,7 @@ export default function RoomPage({ params }: RoomPageProps) {
   // Conflict notification
   const { conflict, showConflict, dismissConflict } = useConflictNotification();
   const { notification: hostChangeNotification, showHostChange, dismissNotification } = useHostChangeNotification();
+  const toast = useToast();
 
   // Determine user role
   const getUserRole = () => {
@@ -147,8 +149,14 @@ export default function RoomPage({ params }: RoomPageProps) {
     },
     isDirty,
     saveInterval: autoSaveConfig.interval,
-    onSuccess: () => console.log('[RoomPage] Auto-save successful'),
-    onError: (error) => console.error('[RoomPage] Auto-save failed:', error),
+    onSuccess: () => {
+      console.log('[RoomPage] Auto-save successful');
+      toast.success('Room state saved');
+    },
+    onError: (error) => {
+      console.error('[RoomPage] Auto-save failed:', error);
+      toast.error('Failed to save room state');
+    },
   });
 
   // Iframe messaging
@@ -323,7 +331,7 @@ export default function RoomPage({ params }: RoomPageProps) {
       }
     } catch (error) {
       console.error('Error using hint:', error);
-      alert(error instanceof Error ? error.message : 'Failed to use hint');
+      toast.error(error instanceof Error ? error.message : 'Failed to use hint');
     }
   };
 
@@ -456,6 +464,12 @@ export default function RoomPage({ params }: RoomPageProps) {
               downClues={clues.down}
               onClueClick={(clue) => {
                 console.log('[RoomPage] Clue clicked:', clue);
+                // Send focus command to iframe
+                sendCommand({ 
+                  type: 'focus_clue', 
+                  clueNumber: clue.number,
+                  direction: clue.number < 100 ? 'across' : 'down' 
+                });
               }}
             />
           }
@@ -508,6 +522,9 @@ export default function RoomPage({ params }: RoomPageProps) {
         conflict={conflict}
         onDismiss={dismissConflict}
       />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.dismissToast} />
     </div>
   );
 }
