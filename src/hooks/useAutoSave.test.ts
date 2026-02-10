@@ -174,7 +174,7 @@ describe('useAutoSave', () => {
     );
 
     await waitFor(() => {
-      expect(onSaveSuccess).toHaveBeenCalled();
+      expect(onSaveSuccess).toHaveBeenCalledWith(expect.anything());
     }, { timeout: 3000 });
   });
 
@@ -193,7 +193,7 @@ describe('useAutoSave', () => {
     );
 
     await waitFor(() => {
-      expect(onSaveError).toHaveBeenCalledWith(expect.any(Error));
+      expect(onSaveError).toHaveBeenCalledWith(expect.any(Error), expect.anything());
     }, { timeout: 3000 });
   });
 

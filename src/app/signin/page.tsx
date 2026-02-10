@@ -1,10 +1,10 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function SignInPage() {
+function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,6 +67,16 @@ export default function SignInPage() {
           Continue with Google
         </button>
       </div>
+    </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50/20 via-background to-orange-50/20 dark:from-amber-950/10 dark:via-background dark:to-orange-950/10">
+      <Suspense fallback={<div className="container mx-auto max-w-md px-4 py-16">Loading...</div>}>
+        <SignInForm />
+      </Suspense>
     </div>
   );
 }

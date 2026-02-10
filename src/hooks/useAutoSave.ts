@@ -3,15 +3,21 @@ import { useDebouncedCallback } from 'use-debounce';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+export type SaveContext = {
+  // When true, caller explicitly requested a save (e.g. "Save Now").
+  // Auto-save paths should pass false/undefined.
+  force?: boolean;
+};
+
 interface UseAutoSaveOptions {
-  saveFunction: () => Promise<void>;
+  saveFunction: (context?: SaveContext) => Promise<void>;
   debounceDelay?: number; // milliseconds for debounce (default: 150ms)
   timeBasedInterval?: number; // milliseconds for periodic save (default: 30000ms)
   isDirty?: boolean; // whether there are unsaved changes
   maxRetries?: number; // maximum retry attempts (default: 3)
   enableOfflineQueue?: boolean; // queue saves when offline (default: true)
-  onSaveSuccess?: () => void;
-  onSaveError?: (error: Error) => void;
+  onSaveSuccess?: (context?: SaveContext) => void;
+  onSaveError?: (error: Error, context?: SaveContext) => void;
 }
 
 interface UseAutoSaveReturn {
@@ -43,10 +49,10 @@ export function useAutoSave({
   const periodicTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
   const retryCountRef = useRef(0);
-  const saveQueueRef = useRef<Array<() => Promise<void>>>([]);
+  const saveQueueRef = useRef<Array<(context?: SaveContext) => Promise<void>>>([]);
 
   // Perform save with retry mechanism
-  const performSave = useCallback(async (isRetry = false) => {
+  const performSave = useCallback(async (context?: SaveContext) => {
     if (!isMountedRef.current) return;
     
     // Check if offline and queue is enabled
@@ -60,12 +66,12 @@ export function useAutoSave({
     setError(null);
     
     try {
-      await saveFunction();
+      await saveFunction(context);
       if (isMountedRef.current) {
         setSaveStatus('saved');
         setLastSaved(new Date());
         retryCountRef.current = 0; // Reset retry count on success
-        onSaveSuccess?.();
+        onSaveSuccess?.(context);
         
         // Auto-hide "saved" status after 3 seconds
         setTimeout(() => {
@@ -85,7 +91,7 @@ export function useAutoSave({
           
           setTimeout(() => {
             if (isMountedRef.current) {
-              performSave(true);
+              performSave(context);
             }
           }, backoffDelay);
         } else {
@@ -93,7 +99,7 @@ export function useAutoSave({
           setSaveStatus('error');
           setError(errorObj.message);
           retryCountRef.current = 0;
-          onSaveError?.(errorObj);
+          onSaveError?.(errorObj, context);
         }
       }
     }
@@ -102,7 +108,7 @@ export function useAutoSave({
   // Debounced save function
   const debouncedSave = useDebouncedCallback(
     () => {
-      performSave();
+      performSave({ force: false });
     },
     debounceDelay
   );
@@ -113,7 +119,7 @@ export function useAutoSave({
       timeoutRef.current = null;
     }
     debouncedSave.cancel(); // Cancel any pending debounced saves
-    await performSave();
+    await performSave({ force: true });
   }, [performSave, debouncedSave]);
 
   // Process queued saves when coming back online
@@ -128,7 +134,7 @@ export function useAutoSave({
     const lastSave = queue[queue.length - 1];
     if (lastSave) {
       try {
-        await lastSave();
+        await lastSave({ force: false });
       } catch (err) {
         console.error('Failed to process queued save:', err);
       }
@@ -172,7 +178,7 @@ export function useAutoSave({
     if (timeBasedInterval > 0) {
       periodicTimerRef.current = setInterval(() => {
         if (isDirty && isOnline) {
-          performSave();
+          performSave({ force: false });
         }
       }, timeBasedInterval);
     }

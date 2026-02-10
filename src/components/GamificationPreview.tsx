@@ -9,12 +9,12 @@ import {
   Flame, 
   Star, 
   Target, 
-  Users, 
   Clock,
   Award,
   Zap,
   Heart,
-  Coffee
+  Coffee,
+  Users
 } from "lucide-react";
 
 interface GamificationPreviewProps {
@@ -62,10 +62,10 @@ export default function GamificationPreview({
       rarity: "rare" as const
     },
     {
-      id: "social-solver",
-      name: "Social Solver",
-      description: "Completed 5 multiplayer puzzles",
-      icon: "users",
+      id: "focused-solver",
+      name: "Focused Solver",
+      description: "Completed 5 puzzles",
+      icon: "star",
       unlockedAt: "1 day ago",
       rarity: "common" as const
     },
@@ -135,7 +135,6 @@ export default function GamificationPreview({
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case "flame": return <Flame className="h-5 w-5" />;
-      case "users": return <Users className="h-5 w-5" />;
       case "zap": return <Zap className="h-5 w-5" />;
       case "trophy": return <Trophy className="h-5 w-5" />;
       case "star": return <Star className="h-5 w-5" />;
@@ -161,7 +160,7 @@ export default function GamificationPreview({
             Your cozy crossword journey
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Celebrate your progress, unlock achievements, and see how you're doing among friends.
+            Celebrate your progress, unlock achievements, and keep building your momentum.
           </p>
         </motion.div>
 

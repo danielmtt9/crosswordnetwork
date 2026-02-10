@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 
 export interface AchievementEvent {
-  type: 'puzzle_completed' | 'daily_activity' | 'multiplayer_join' | 'multiplayer_host';
+  type: 'puzzle_completed' | 'daily_activity';
   data: any;
 }
 
@@ -111,14 +111,6 @@ async function evaluateRequirement(
         if (event.type !== 'puzzle_completed') return false;
         const difficultyCount = await getDifficultyCompletedCount(userId, requirement.meta.difficulty);
         return difficultyCount >= requirement.threshold;
-
-      case 'multiplayer_join':
-        if (event.type !== 'multiplayer_join') return false;
-        return true;
-
-      case 'multiplayer_host':
-        if (event.type !== 'multiplayer_host') return false;
-        return true;
 
       default:
         return false;

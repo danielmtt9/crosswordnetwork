@@ -87,7 +87,10 @@ export default function EmojiPicker({ onEmojiSelect, onClose, isOpen, className 
     }
   }, [isOpen, onClose]);
 
-  const handleEmojiClick = (emoji: string) => {
+  const handleEmojiClick = (emoji: string, event: React.MouseEvent) => {
+    // Prevent event bubbling to avoid click-outside handler
+    event.stopPropagation();
+    
     onEmojiSelect(emoji);
     
     // Add to recent emojis
@@ -100,6 +103,7 @@ export default function EmojiPicker({ onEmojiSelect, onClose, isOpen, className 
       console.error('Error saving recent emojis:', error);
     }
     
+    // Close picker after selection
     onClose();
   };
 
@@ -134,7 +138,7 @@ export default function EmojiPicker({ onEmojiSelect, onClose, isOpen, className 
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: -10 }}
         transition={{ duration: 0.15 }}
-        className={`absolute bottom-full left-0 mb-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${className}`}
+        className={`w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ${className}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
@@ -190,7 +194,7 @@ export default function EmojiPicker({ onEmojiSelect, onClose, isOpen, className 
               {getFilteredEmojis().map((emoji, index) => (
                 <button
                   key={`${activeCategory}-${index}`}
-                  onClick={() => handleEmojiClick(emoji)}
+                  onClick={(e) => handleEmojiClick(emoji, e)}
                   className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                   title={emoji}
                 >

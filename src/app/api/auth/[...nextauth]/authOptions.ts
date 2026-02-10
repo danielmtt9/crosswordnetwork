@@ -11,6 +11,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Allow redirect URIs to be determined dynamically
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -55,6 +56,22 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
+    async signIn({ user }) {
+      try {
+        const email = user?.email?.toLowerCase();
+        if (email && email.endsWith('@crossword.network')) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { role: 'ADMIN' }
+          });
+          user.role = 'ADMIN';
+        }
+        return true;
+      } catch (error) {
+        console.error('Error enforcing admin role for crossword.network:', error);
+        return false;
+      }
+    },
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;

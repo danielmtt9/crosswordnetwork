@@ -64,15 +64,12 @@ const CONFIG_CATEGORIES = {
 const DEFAULT_CONFIGS = {
   limits: [
     { key: 'max_hints_per_puzzle', value: 3, description: 'Maximum hints allowed per puzzle' },
-    { key: 'max_room_capacity', value: 10, description: 'Maximum players per multiplayer room' },
     { key: 'max_puzzle_size', value: 15, description: 'Maximum puzzle grid size' },
     { key: 'session_timeout_minutes', value: 30, description: 'User session timeout in minutes' }
   ],
   features: [
-    { key: 'enable_multiplayer', value: true, description: 'Enable multiplayer functionality' },
     { key: 'enable_achievements', value: true, description: 'Enable achievement system' },
-    { key: 'enable_leaderboards', value: true, description: 'Enable leaderboards' },
-    { key: 'enable_chat', value: true, description: 'Enable chat functionality' }
+    { key: 'enable_leaderboards', value: true, description: 'Enable leaderboards' }
   ],
   security: [
     { key: 'require_email_verification', value: true, description: 'Require email verification for new accounts' },

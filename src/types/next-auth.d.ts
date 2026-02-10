@@ -11,9 +11,6 @@ declare module "next-auth" {
     };
     userId?: string;
     role?: string;
-    subscriptionStatus?: string;
-    trialEndsAt?: Date;
     requirePasswordChange?: boolean;
   }
 }
-

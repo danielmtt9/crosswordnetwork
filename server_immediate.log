@@ -1,0 +1,7 @@
+> Ready on http://localhost:3004
+(node:68618) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Compiled /middleware in 405ms (273 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2.9s (1680 modules)
+ GET / 200 in 3386ms

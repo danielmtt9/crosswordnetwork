@@ -16,7 +16,6 @@ import {
   Puzzle,
   Users,
   Shield,
-  Crown,
   Clock,
   TrendingUp,
   AlertTriangle,
@@ -47,13 +46,11 @@ interface UserDetails {
     name: string | null;
     email: string;
     role: string;
-    subscriptionStatus: string;
     accountStatus: string;
     suspendedAt: Date | null;
     suspendedBy: string | null;
     suspensionReason: string | null;
     suspensionExpiresAt: Date | null;
-    trialEndsAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
     _count: {
@@ -93,15 +90,7 @@ interface UserDetails {
 
 const roleColors = {
   FREE: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  PREMIUM: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   ADMIN: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-};
-
-const statusColors = {
-  TRIAL: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  INACTIVE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
 };
 
 const difficultyColors = {
@@ -190,24 +179,8 @@ export default function UserDetailsPage() {
     switch (role) {
       case 'ADMIN':
         return <Shield className="h-5 w-5" />;
-      case 'PREMIUM':
-        return <Crown className="h-5 w-5" />;
       default:
         return <User className="h-5 w-5" />;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'TRIAL':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'INACTIVE':
-      case 'CANCELLED':
-        return <XCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return <User className="h-4 w-4" />;
     }
   };
 
@@ -325,13 +298,9 @@ export default function UserDetailsPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleUpdateUser({ role: 'PREMIUM' })}>
-                    <Crown className="h-4 w-4 mr-2" />
-                    Make Premium
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleUpdateUser({ role: 'FREE' })}>
                     <User className="h-4 w-4 mr-2" />
-                    Make Free
+                    Make Player
                   </DropdownMenuItem>
                   {isCurrentUserSuperAdmin && (
                     <DropdownMenuItem onClick={() => handleUpdateUser({ role: 'ADMIN' })}>
@@ -381,17 +350,7 @@ export default function UserDetailsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Role</span>
                     <Badge className={roleColors[user.role as keyof typeof roleColors]}>
-                      {user.role}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Subscription</span>
-                    <Badge className={statusColors[user.subscriptionStatus as keyof typeof statusColors]}>
-                      <div className="flex items-center gap-1">
-                        {getStatusIcon(user.subscriptionStatus)}
-                        {user.subscriptionStatus}
-                      </div>
+                      {user.role === 'FREE' ? 'Player' : user.role}
                     </Badge>
                   </div>
 
@@ -434,14 +393,6 @@ export default function UserDetailsPage() {
                     </>
                   )}
 
-                  {user.trialEndsAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Trial Ends</span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(user.trialEndsAt)}
-                      </span>
-                    </div>
-                  )}
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Joined</span>

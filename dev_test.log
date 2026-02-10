@@ -1,0 +1,7 @@
+
+> crossword-network-temp@0.1.0 dev
+> node server.js
+
+> Ready on http://localhost:3004
+SIGTERM received, shutting down gracefully
+Server closed

@@ -150,7 +150,7 @@ export default function UsernameSettingsPage() {
             Username Settings
           </CardTitle>
           <CardDescription>
-            Choose a unique username that will be displayed in multiplayer games and leaderboards.
+            Choose a unique username that will be displayed on your profile and in leaderboards.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

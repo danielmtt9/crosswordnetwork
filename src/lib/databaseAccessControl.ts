@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { getUserAccessLevel, requirePermission } from "@/lib/accessControl";
 
 /**
@@ -91,7 +90,7 @@ export function withDatabaseAccessControl(
   return async (request: NextRequest, context: any): Promise<NextResponse> => {
     try {
       // Get session
-      const session = await getServerSession(authOptions);
+      const session = await getAuthSession();
       if (!session?.userId) {
         return NextResponse.json(
           { error: "Unauthorized - No session" },
@@ -134,11 +133,15 @@ export function withDatabaseAccessControl(
     } catch (error) {
       console.error('Database access control error:', error);
       
-      if (error.message.includes('Permission denied') || error.message.includes('Access denied')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 403 }
-        );
+      // Type-safe error handling: check if error is an Error instance
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        if (errorMessage.includes('Permission denied') || errorMessage.includes('Access denied')) {
+          return NextResponse.json(
+            { error: errorMessage },
+            { status: 403 }
+          );
+        }
       }
 
       return NextResponse.json(

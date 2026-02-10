@@ -1,0 +1,31 @@
+/* Hide unwanted elements inside the puzzle iframe */
+
+/* Hide answer input box */
+#answerbox {
+  display: none !important;
+}
+
+/* Hide welcome message */
+#welcomemessage {
+  display: none !important;
+}
+
+/* Hide check puzzle button */
+#checkbutton {
+  display: none !important;
+}
+
+/* Hide copyright notice */
+.ecw-copyright {
+  display: none !important;
+}
+
+/* Hide congratulations message (will handle externally) */
+#congratulations {
+  display: none !important;
+}
+
+/* Ensure cells remain clickable but don't show internal UI */
+.ecw-box {
+  cursor: pointer !important;
+}

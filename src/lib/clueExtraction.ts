@@ -8,6 +8,7 @@ export interface Clue {
   direction: 'across' | 'down';
   answer?: string;
   length?: number;
+  cells?: Array<{ row: number; col: number }>;
 }
 
 export interface CluesByDirection {
@@ -26,6 +27,14 @@ export function extractCluesFromIframe(iframe: HTMLIFrameElement | null): CluesB
   try {
     const contentWindow = iframe.contentWindow as any;
     
+    // Try EclipseCrossword data arrays
+    if (contentWindow.Clue && contentWindow.Word && typeof contentWindow.LastHorizontalWord === 'number') {
+      const clues = parseEclipseCrosswordData(contentWindow);
+      if (clues && (clues.across.length > 0 || clues.down.length > 0)) {
+        return clues;
+      }
+    }
+    
     // Try EclipseCrossword API
     if (contentWindow.__ecwGetClues) {
       const clues = contentWindow.__ecwGetClues();
@@ -43,6 +52,97 @@ export function extractCluesFromIframe(iframe: HTMLIFrameElement | null): CluesB
 }
 
 /**
+ * Parse clues from EclipseCrossword data arrays
+ */
+function parseEclipseCrosswordData(win: any): CluesByDirection | null {
+  try {
+    const { Clue, Word, LastHorizontalWord, WordLength, WordX, WordY, CrosswordWidth, CrosswordHeight } = win;
+    
+    if (!Clue || !Word || typeof LastHorizontalWord !== 'number' || !WordX || !WordY) {
+      return null;
+    }
+
+    // Build a mapping of grid positions to clue numbers
+    // In a crossword, each cell that starts a word gets a sequential number from top-left to bottom-right
+    const gridStarts = new Map<string, number>();
+    const clueNumbers: number[] = new Array(Word.length);
+    
+    // Collect all word start positions
+    const startPositions: Array<{ x: number; y: number; wordIndex: number }> = [];
+    for (let i = 0; i < Word.length; i++) {
+      startPositions.push({ x: WordX[i], y: WordY[i], wordIndex: i });
+    }
+    
+    // Sort by y (row) first, then x (column) to assign numbers sequentially
+    startPositions.sort((a, b) => {
+      if (a.y !== b.y) return a.y - b.y;
+      return a.x - b.x;
+    });
+    
+    // Assign clue numbers, but don't duplicate for cells that start multiple words
+    let nextNumber = 1;
+    for (const pos of startPositions) {
+      const key = `${pos.x},${pos.y}`;
+      if (!gridStarts.has(key)) {
+        gridStarts.set(key, nextNumber);
+        nextNumber++;
+      }
+      clueNumbers[pos.wordIndex] = gridStarts.get(key)!;
+    }
+
+    const across: Clue[] = [];
+    const down: Clue[] = [];
+
+    // Helper to generate cell coordinates for a word
+    const generateCells = (startX: number, startY: number, length: number, isAcross: boolean): Array<{ row: number; col: number }> => {
+      const cells: Array<{ row: number; col: number }> = [];
+      for (let offset = 0; offset < length; offset++) {
+        cells.push({
+          row: startY + (isAcross ? 0 : offset),
+          col: startX + (isAcross ? offset : 0),
+        });
+      }
+      return cells;
+    };
+
+    // Words 0 to LastHorizontalWord-1 are across
+    for (let i = 0; i < LastHorizontalWord; i++) {
+      if (Clue[i] && Word[i]) {
+        const wordLength = WordLength?.[i] || Word[i].length;
+        across.push({
+          number: clueNumbers[i],
+          text: Clue[i],
+          direction: 'across',
+          answer: Word[i],
+          length: wordLength,
+          cells: generateCells(WordX[i], WordY[i], wordLength, true),
+        });
+      }
+    }
+
+    // Words from LastHorizontalWord onwards are down
+    for (let i = LastHorizontalWord; i < Clue.length; i++) {
+      if (Clue[i] && Word[i]) {
+        const wordLength = WordLength?.[i] || Word[i].length;
+        down.push({
+          number: clueNumbers[i],
+          text: Clue[i],
+          direction: 'down',
+          answer: Word[i],
+          length: wordLength,
+          cells: generateCells(WordX[i], WordY[i], wordLength, false),
+        });
+      }
+    }
+
+    return { across, down };
+  } catch (error) {
+    console.error('Failed to parse EclipseCrossword data:', error);
+    return null;
+  }
+}
+
+/**
  * Normalize clues to consistent format
  */
 function normalizeClues(raw: any): CluesByDirection {
@@ -53,6 +153,7 @@ function normalizeClues(raw: any): CluesByDirection {
       direction: clue.direction || 'across',
       answer: clue.answer,
       length: clue.length || clue.answer?.length,
+      cells: clue.cells || undefined,
     }));
   };
 
@@ -144,8 +245,9 @@ export function formatCluesForDisplay(clues: CluesByDirection) {
   const format = (clueList: Clue[]) => {
     return clueList.map(clue => ({
       number: clue.number,
-      clue: clue.text,
+      text: clue.text,
       length: clue.length,
+      cells: clue.cells, // Include cells for highlight functionality
     })).sort((a, b) => a.number - b.number);
   };
 

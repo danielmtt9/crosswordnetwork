@@ -5,29 +5,14 @@ const createJestConfig = nextJest({
   dir: './',
 })
 
-// Add any custom config to be passed to Jest
+// Launch-scope Jest config: single-player + admin + persistence + hints.
+// The full legacy matrix is preserved in `jest.full.config.js`.
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'node',
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/*.stories.{js,jsx,ts,tsx}',
-    '!src/**/*.test.{js,jsx,ts,tsx}',
-    '!src/**/*.spec.{js,jsx,ts,tsx}',
-    '!tests/**/*',
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
   },
   // Use ts-jest for TypeScript, babel-jest for JavaScript
   transform: {
@@ -46,7 +31,12 @@ const customJestConfig = {
   projects: [
     {
       displayName: 'Unit Tests - API Routes',
-      testMatch: ['<rootDir>/src/app/api/**/*.test.ts'],
+      // Only API routes that power launch scope (puzzles, hints, admin puzzle upload).
+      testMatch: [
+        '<rootDir>/src/app/api/puzzles/**/*.test.ts',
+        '<rootDir>/src/app/api/hints/**/*.test.ts',
+        '<rootDir>/src/app/api/contact/**/*.test.ts',
+      ],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
@@ -68,7 +58,16 @@ const customJestConfig = {
     },
     {
       displayName: 'Unit Tests - Components',
-      testMatch: ['<rootDir>/src/components/**/*.test.tsx', '<rootDir>/src/hooks/**/*.test.ts', '<rootDir>/src/lib/**/*.test.ts'],
+      // Only UI/hooks/libs used in single-player puzzle flow and persistence/hints.
+      testMatch: [
+        '<rootDir>/src/components/puzzle/**/*.test.tsx',
+        '<rootDir>/src/components/layouts/**/*.test.tsx',
+        '<rootDir>/src/hooks/useAutoSave.test.ts',
+        '<rootDir>/src/hooks/useDeviceType.test.ts',
+        '<rootDir>/src/hooks/useIframeMessage.test.ts',
+        '<rootDir>/src/lib/iframeMessaging.test.ts',
+        '<rootDir>/src/lib/layoutDetection.test.ts',
+      ],
       testEnvironment: 'jsdom',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
@@ -87,121 +86,6 @@ const customJestConfig = {
       transformIgnorePatterns: [
         'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
       ],
-    },
-    {
-      displayName: 'Integration Tests',
-      testMatch: ['<rootDir>/tests/integration/**/*.test.ts'],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/integration.setup.js'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
-      transform: {
-        '^.+\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }
-        }],
-        '^.+\.(js|jsx|mjs)$': 'babel-jest',
-      },
-      transformIgnorePatterns: [
-        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
-      ],
-      testTimeout: 30000,
-    },
-    {
-      displayName: 'End-to-End Tests',
-      testMatch: ['<rootDir>/tests/e2e/**/*.test.ts'],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/e2e.setup.js'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
-      transform: {
-        '^.+\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }
-        }],
-        '^.+\.(js|jsx|mjs)$': 'babel-jest',
-      },
-      transformIgnorePatterns: [
-        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
-      ],
-      testTimeout: 60000,
-    },
-    {
-      displayName: 'Performance Tests',
-      testMatch: ['<rootDir>/tests/performance/**/*.test.ts'],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/performance.setup.js'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
-      transform: {
-        '^.+\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }
-        }],
-        '^.+\.(js|jsx|mjs)$': 'babel-jest',
-      },
-      transformIgnorePatterns: [
-        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
-      ],
-      testTimeout: 120000,
-    },
-    {
-      displayName: 'Security Tests',
-      testMatch: ['<rootDir>/tests/security/**/*.test.ts'],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/security.setup.js'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
-      transform: {
-        '^.+\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }
-        }],
-        '^.+\.(js|jsx|mjs)$': 'babel-jest',
-      },
-      transformIgnorePatterns: [
-        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
-      ],
-      testTimeout: 30000,
-    },
-    {
-      displayName: 'MCP Tests',
-      testMatch: ['<rootDir>/tests/mcp/**/*.test.ts'],
-      testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/tests/setup/mcp.setup.js'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-      },
-      transform: {
-        '^.+\.tsx?$': ['ts-jest', {
-          tsconfig: {
-            jsx: 'react-jsx',
-            esModuleInterop: true,
-            allowSyntheticDefaultImports: true,
-          }
-        }],
-        '^.+\.(js|jsx|mjs)$': 'babel-jest',
-      },
-      transformIgnorePatterns: [
-        'node_modules/(?!(@auth|next-auth|@auth/prisma-adapter|@auth/core)/)',
-      ],
-      testTimeout: 45000,
     },
   ],
 }

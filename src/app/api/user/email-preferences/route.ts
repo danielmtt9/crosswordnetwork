@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
       frequency: 'immediate' as const,
       achievements: true,
       leaderboards: true,
-      social: true,
       security: true
     };
 
@@ -40,7 +39,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -55,7 +54,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate preferences structure
-    const validKeys = ['marketing', 'notifications', 'frequency', 'achievements', 'leaderboards', 'social', 'security'];
+    const validKeys = ['marketing', 'notifications', 'frequency', 'achievements', 'leaderboards', 'security'];
     const hasValidKeys = validKeys.every(key => key in preferences);
     
     if (!hasValidKeys) {
@@ -83,7 +82,6 @@ export async function PUT(request: NextRequest) {
         frequency: preferences.frequency,
         achievements: Boolean(preferences.achievements),
         leaderboards: Boolean(preferences.leaderboards),
-        social: Boolean(preferences.social),
         security: Boolean(preferences.security),
         updatedAt: new Date()
       },
@@ -94,7 +92,6 @@ export async function PUT(request: NextRequest) {
         frequency: preferences.frequency,
         achievements: Boolean(preferences.achievements),
         leaderboards: Boolean(preferences.leaderboards),
-        social: Boolean(preferences.social),
         security: Boolean(preferences.security)
       }
     });

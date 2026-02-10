@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const difficulty = searchParams.get("difficulty");
-    const tier = searchParams.get("tier");
     const tags = searchParams.get("tags")?.split(',') || [];
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
@@ -23,10 +22,6 @@ export async function GET(request: NextRequest) {
 
     if (difficulty && difficulty !== "all") {
       where.difficulty = difficulty;
-    }
-
-    if (tier && tier !== "all") {
-      where.tier = tier;
     }
 
     // Filter by tags if provided
@@ -60,7 +55,6 @@ export async function GET(request: NextRequest) {
           title: true,
           description: true,
           difficulty: true,
-          tier: true,
           category: true,
           tags: true,
           play_count: true,
@@ -96,7 +90,7 @@ export async function GET(request: NextRequest) {
       filters: {
         categories: categories.map((c) => c.category).filter(Boolean),
         difficulties: ["easy", "medium", "hard"],
-        tiers: ["free", "premium"],
+        tiers: [],
       },
     });
   } catch (error) {

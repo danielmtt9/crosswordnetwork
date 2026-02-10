@@ -25,6 +25,205 @@
     filledCells: 0
   };
   
+  // Multiplayer mode detection - moved to global scope for proper access
+  let isMultiplayerMode = false;
+  let multiplayerCallback = null;
+
+  window.__enableMultiplayer = function(callback) {
+    isMultiplayerMode = true;
+    multiplayerCallback = callback;
+    console.log('[ECW Bridge] Multiplayer mode enabled with callback');
+  };
+
+  // External input mode detection
+  let externalInputEnabled = false;
+  let externalInputSourceId = null;
+  let integratedGridInputEnabled = false;
+  let overlayInputEl = null;
+  let overlayContainerEl = null;
+  const bridgeId = `bridge-${Date.now()}`;
+
+  // Send EC_IFRAME_READY on load
+  function notifyBridgeReady() {
+    sendMessage('EC_IFRAME_READY', {
+      bridgeId: bridgeId,
+      version: '1.0'
+    });
+  }
+
+  // Hide internal answer box visually but keep it functional
+  function hideInternalAnswerBox() {
+    // Check if style already exists to avoid duplicates
+    if (document.getElementById('external-input-hide-style')) {
+      return; // Already hidden
+    }
+    
+    const style = document.createElement('style');
+    style.id = 'external-input-hide-style';
+    style.textContent = `
+      #answerbox,
+      #wordentry {
+        position: absolute !important;
+        left: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        clip-path: inset(50%) !important;
+        overflow: hidden !important;
+      }
+      /* Cells are display-only in EclipseCrossword - input happens via answer box */
+    `;
+    document.head.appendChild(style);
+    
+    // NOTE: EclipseCrossword cells are NOT directly editable
+    // Input happens via the answer box (wordentry), not direct cell editing
+    // The answer box should remain visible and functional
+    console.log('[ECW Bridge] Internal answer box hidden (cells use answer box for input)');
+  }
+  
+  // Re-enable internal answer box (for fallback scenarios)
+  function showInternalAnswerBox() {
+    const style = document.getElementById('external-input-hide-style');
+    if (style) {
+      style.remove();
+      console.log('[ECW Bridge] Internal answer box re-enabled');
+    }
+  }
+
+  // --- Integrated grid input overlay (type directly in grid cells) ---
+  function createOverlayInput() {
+    if (overlayContainerEl) return;
+    
+    overlayContainerEl = document.createElement('div');
+    overlayContainerEl.id = 'ecw-integrated-input-container';
+    overlayContainerEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+    
+    overlayInputEl = document.createElement('input');
+    overlayInputEl.id = 'ecw-integrated-input';
+    overlayInputEl.type = 'text';
+    overlayInputEl.autocomplete = 'off';
+    overlayInputEl.setAttribute('aria-label', 'Crossword answer input');
+    overlayInputEl.style.cssText = 'position:fixed;opacity:0;pointer-events:auto;border:none;outline:none;margin:0;padding:0;font:inherit;background:transparent;';
+    
+    overlayInputEl.addEventListener('input', function() {
+      if (!integratedGridInputEnabled || typeof CurrentWord === 'undefined' || CurrentWord < 0) return;
+      const maxLen = WordLength[CurrentWord] || 0;
+      let val = this.value.toUpperCase().replace(/[^A-Z]/g, '');
+      if (val.length > maxLen) val = val.slice(0, maxLen);
+      this.value = val;
+      applyExternalInput(val, externalInputSourceId);
+    });
+    
+    overlayInputEl.addEventListener('keydown', function(e) {
+      if (!integratedGridInputEnabled) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (typeof window.DeselectCurrentWord === 'function') {
+          window.DeselectCurrentWord();
+        }
+        hideOverlayInput();
+        return;
+      }
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleExternalBackspace();
+        const len = (WordLength[CurrentWord] || 0);
+        let currentFill = '';
+        if (typeof CurrentWord !== 'undefined' && CurrentWord >= 0) {
+          const wordIndex = CurrentWord;
+          const x = WordX[wordIndex] || 0;
+          const y = WordY[wordIndex] || 0;
+          const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+          for (let i = 0; i < len; i++) {
+            const cellX = direction === 'across' ? x + i : x;
+            const cellY = direction === 'across' ? y : y + i;
+            const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+            const cell = document.getElementById(cellId);
+            currentFill += cell && cell.textContent ? cell.textContent.trim() : '';
+          }
+        }
+        this.value = currentFill;
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        return;
+      }
+      if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+        const maxLen = WordLength[CurrentWord] || 0;
+        let val = this.value.toUpperCase().replace(/[^A-Z]/g, '') + e.key.toUpperCase();
+        if (val.length > maxLen) val = val.slice(0, maxLen);
+        e.preventDefault();
+        this.value = val;
+        applyExternalInput(val, externalInputSourceId);
+      }
+    });
+    
+    overlayContainerEl.appendChild(overlayInputEl);
+    document.body.appendChild(overlayContainerEl);
+    console.log('[ECW Bridge] Integrated grid overlay input created');
+  }
+
+  function positionOverlayInput() {
+    if (!overlayInputEl || !integratedGridInputEnabled) return;
+    if (typeof CurrentWord === 'undefined' || CurrentWord < 0) {
+      hideOverlayInput();
+      return;
+    }
+    const wordIndex = CurrentWord;
+    const x = WordX[wordIndex] || 0;
+    const y = WordY[wordIndex] || 0;
+    const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+    const cellId = 'c' + padNumber(x) + padNumber(y);
+    const cell = document.getElementById(cellId);
+    if (!cell) {
+      overlayInputEl.style.visibility = 'hidden';
+      return;
+    }
+    const rect = cell.getBoundingClientRect();
+    overlayInputEl.style.top = rect.top + 'px';
+    overlayInputEl.style.left = rect.left + 'px';
+    overlayInputEl.style.width = rect.width + 'px';
+    overlayInputEl.style.height = rect.height + 'px';
+    overlayInputEl.style.visibility = 'visible';
+    
+    let currentFill = '';
+    const length = WordLength[wordIndex] || 0;
+    for (let i = 0; i < length; i++) {
+      const cellX = direction === 'across' ? x + i : x;
+      const cellY = direction === 'across' ? y : y + i;
+      const cid = 'c' + padNumber(cellX) + padNumber(cellY);
+      const c = document.getElementById(cid);
+      currentFill += c && c.textContent ? c.textContent.trim() : '';
+    }
+    overlayInputEl.value = currentFill;
+    overlayInputEl.maxLength = length;
+    
+    try {
+      overlayInputEl.focus();
+    } catch (_) {}
+  }
+
+  function showOverlayInput() {
+    if (!overlayInputEl) return;
+    overlayContainerEl.style.pointerEvents = 'auto';
+    positionOverlayInput();
+  }
+
+  function hideOverlayInput() {
+    if (overlayInputEl) {
+      overlayInputEl.value = '';
+      overlayInputEl.style.visibility = 'hidden';
+      overlayInputEl.style.top = '-9999px';
+      overlayInputEl.style.left = '-9999px';
+      try { overlayInputEl.blur(); } catch (_) {}
+    }
+    if (overlayContainerEl) {
+      overlayContainerEl.style.pointerEvents = 'none';
+    }
+  }
+
   // Initialize bridge
   function initBridge() {
     // Debug flag from URL (?debug=1) or window flag
@@ -37,16 +236,6 @@
       setTimeout(initBridge, 100);
       return;
     }
-    
-    // Multiplayer mode detection
-    let isMultiplayerMode = false;
-    let multiplayerCallback = null;
-
-    window.__enableMultiplayer = function(callback) {
-      isMultiplayerMode = true;
-      multiplayerCallback = callback;
-      console.log('[ECW Bridge] Multiplayer mode enabled');
-    };
     
     // Store original functions
     originalCheckClick = window.CheckClick;
@@ -76,20 +265,43 @@
       return result;
     };
     
-    // Hook into OKClick to track progress
+    // Hook into OKClick to track progress and capture cell updates for multiplayer
+    // This is the CORRECT way - EclipseCrossword fills cells via innerHTML in OKClick()
     window.OKClick = function() {
+      // Call original first to fill cells via innerHTML (EclipseCrossword's way)
       const result = originalOKClick.call(this);
       
-      if (isMultiplayerMode && multiplayerCallback) {
-        // Send cell update to server
-        const focusedCell = document.activeElement;
-        if (focusedCell && focusedCell.id && focusedCell.id.startsWith('c')) {
-          multiplayerCallback({
-            type: 'cell_update',
-            cellId: focusedCell.id,
-            value: focusedCell.textContent || '',
-            timestamp: Date.now()
-          });
+      // After cells are filled, capture updates for multiplayer
+      if (isMultiplayerMode && typeof multiplayerCallback === 'function') {
+        // Get the word that was just filled (CurrentWord is set by SelectThisWord)
+        if (typeof CurrentWord !== 'undefined' && CurrentWord >= 0) {
+          const x = WordX[CurrentWord];
+          const y = WordY[CurrentWord];
+          const wordLength = WordLength[CurrentWord];
+          const isHorizontal = CurrentWord <= LastHorizontalWord;
+          
+          // Broadcast each cell update in the word
+          for (let i = 0; i < wordLength; i++) {
+            const cellX = isHorizontal ? x + i : x;
+            const cellY = isHorizontal ? y : y + i;
+            const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+            const cell = document.getElementById(cellId);
+            
+            if (cell) {
+              // Get value from innerHTML (how EclipseCrossword stores it)
+              const value = cell.innerHTML.trim();
+              // Clean up: remove &nbsp; and empty strings
+              const cleanValue = (value === '&nbsp;' || value === '' || value === ' ') ? '' : value;
+              
+              console.log('[ECW Bridge] OKClick: Broadcasting cell update:', cellId, cleanValue);
+              multiplayerCallback({
+                type: 'cell_update',
+                cellId: cellId,
+                value: cleanValue,
+                timestamp: Date.now()
+              });
+            }
+          }
         }
       }
       
@@ -182,9 +394,92 @@
       // Setup cell validation listeners
       setTimeout(() => {
         setupCellValidation();
+        setupExternalInputTracking();
       }, 500);
+      
+      // Notify parent that bridge is ready
+      setTimeout(notifyBridgeReady, 100);
     } catch (e) {
       // no-op
+    }
+  }
+
+  // Setup external input tracking
+  function setupExternalInputTracking() {
+    // Track word selection changes
+    const originalSelect = window.SelectThisWord;
+    if (originalSelect) {
+      window.SelectThisWord = function(event) {
+        const result = originalSelect.call(this, event);
+        
+        if (externalInputEnabled && typeof CurrentWord !== 'undefined' && CurrentWord >= 0) {
+          notifyWordSelected();
+        } else if (integratedGridInputEnabled && (typeof CurrentWord === 'undefined' || CurrentWord < 0)) {
+          hideOverlayInput();
+        }
+        
+        return result;
+      };
+    }
+    
+    // Hide overlay when word is deselected
+    const originalDeselect = window.DeselectCurrentWord;
+    if (originalDeselect) {
+      window.DeselectCurrentWord = function() {
+        const result = originalDeselect.call(this);
+        if (integratedGridInputEnabled) {
+          hideOverlayInput();
+        }
+        return result;
+      };
+    }
+    
+    console.log('[ECW Bridge] External input tracking setup complete');
+  }
+
+  // Notify parent of word selection
+  function notifyWordSelected() {
+    try {
+      if (typeof CurrentWord === 'undefined' || CurrentWord < 0) return;
+      
+      const wordIndex = CurrentWord;
+      const word = Word[wordIndex] || '';
+      const clue = Clue[wordIndex] || '';
+      const length = WordLength[wordIndex] || 0;
+      const number = wordIndex + 1; // Convert to 1-based
+      const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+      const x = WordX[wordIndex] || 0;
+      const y = WordY[wordIndex] || 0;
+      
+      // Get current fill
+      let currentFill = '';
+      for (let i = 0; i < length; i++) {
+        const cellX = direction === 'across' ? x + i : x;
+        const cellY = direction === 'across' ? y : y + i;
+        const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+        const cell = document.getElementById(cellId);
+        const value = cell ? (cell.textContent || '').trim() : '';
+        currentFill += value || '_';
+      }
+      
+      sendMessage('EC_WORD_SELECTED', {
+        word: {
+          id: `w-${number}-${direction}`,
+          number: number,
+          direction: direction,
+          clue: clue,
+          length: length,
+          start: { row: y, col: x },
+          currentFill: currentFill,
+          indexInWord: 0
+        }
+      });
+      
+      if (integratedGridInputEnabled && overlayInputEl) {
+        showOverlayInput();
+      }
+    } catch (e) {
+      console.error('[ECW Bridge] Error notifying word selected:', e);
     }
   }
   
@@ -312,38 +607,30 @@
       const crosswordTable = document.getElementById('crossword');
       if (!crosswordTable) return;
       
-      // Add input event listener to all cells
-      crosswordTable.addEventListener('input', function(event) {
+      // Handler for cell input
+      const handleCellInput = function(event) {
         const target = event.target;
         if (!target.id || !target.id.startsWith('c')) return;
         
         const inputLetter = target.textContent?.trim() || '';
+        
+        // Multiplayer: emit per-keystroke cell update (even for empty cells)
+        if (isMultiplayerMode && typeof multiplayerCallback === 'function') {
+          console.log('[ECW Bridge] Emitting cell_update:', target.id, inputLetter);
+          multiplayerCallback({
+            type: 'cell_update',
+            cellId: target.id,
+            value: inputLetter,
+            timestamp: Date.now()
+          });
+        }
+        
+        // Skip validation for empty input
         if (!inputLetter) return;
         
         // Validate the letter
         const validation = validateLetter(target.id, inputLetter);
         if (!validation) return;
-        
-        // Multiplayer: emit per-keystroke cell update
-        try {
-          console.log('[ECW Bridge] Keystroke validation result:', validation);
-          console.log('[ECW Bridge] Multiplayer state:', { isMultiplayerMode, callbackType: typeof multiplayerCallback });
-          
-          if (isMultiplayerMode && typeof multiplayerCallback === 'function') {
-            console.log('[ECW Bridge] Emitting cell_update:', target.id, inputLetter);
-            multiplayerCallback({
-              type: 'cell_update',
-              cellId: target.id,
-              value: inputLetter,
-              timestamp: Date.now()
-            });
-            console.log('[ECW Bridge] Cell update emitted successfully');
-          } else {
-            console.log('[ECW Bridge] Not emitting cell_update - multiplayerMode:', isMultiplayerMode, 'callback:', typeof multiplayerCallback);
-          }
-        } catch (e) {
-          console.error('[ECW Bridge] Error emitting cell update:', e);
-        }
         
         // Update stats
         validationStats.totalAttempts++;
@@ -398,7 +685,14 @@
             });
           }
         }
-      });
+      };
+      
+      // NOTE: EclipseCrossword does NOT use directly editable cells
+      // Cells are filled via innerHTML in OKClick(), not through direct input events
+      // We hook into OKClick() to capture updates for multiplayer (see initBridge)
+      // Direct input event listeners are NOT needed and won't work correctly
+      
+      console.log('[ECW Bridge] Cell validation setup complete (using OKClick hook for multiplayer)');
     } catch (e) {
       console.error('setupCellValidation error', e);
     }
@@ -575,9 +869,186 @@
             loadGridState(event.data.data.gridState);
           }
           break;
+
+        case 'EC_ENABLE_EXTERNAL_INPUT':
+          if (event.data.data && event.data.data.hideInternal) {
+            externalInputEnabled = true;
+            externalInputSourceId = event.data.data.sourceId;
+            integratedGridInputEnabled = !!(event.data.data.integratedGridInput);
+            
+            if (integratedGridInputEnabled) {
+              createOverlayInput();
+              hideInternalAnswerBox();
+              console.log('[ECW Bridge] Integrated grid input enabled - overlay created');
+            }
+            
+            if (!integratedGridInputEnabled && typeof window.parent !== 'undefined') {
+              setTimeout(() => {
+                console.log('[ECW Bridge] External input enabled, sourceId:', externalInputSourceId);
+                if (event.data.data.forceHide && event.data.data.verified) {
+                  hideInternalAnswerBox();
+                  console.log('[ECW Bridge] Answer box hidden after verification');
+                }
+              }, 1000);
+            } else if (!integratedGridInputEnabled) {
+              console.warn('[ECW Bridge] External input requested but parent window not available');
+            }
+          }
+          break;
+
+        case 'EC_APPLY_INPUT':
+          if (externalInputEnabled && event.data.data) {
+            applyExternalInput(event.data.data.value || '', event.data.sourceId);
+          }
+          break;
+
+        case 'check_puzzle':
+          if (typeof window.CheckClick === 'function') {
+            window.CheckClick();
+          } else if (typeof originalCheckClick === 'function') {
+            originalCheckClick.call(window);
+          }
+          break;
+
+        case 'EC_CLEAR_WORD':
+          if (externalInputEnabled) {
+            clearCurrentWord();
+          }
+          break;
+
+        case 'EC_BACKSPACE':
+          if (externalInputEnabled) {
+            handleExternalBackspace();
+          }
+          break;
+
+        case 'EC_DISABLE_EXTERNAL_INPUT':
+          // Re-enable internal answer box (fallback scenario)
+          if (event.data.data && event.data.data.showInternal) {
+            externalInputEnabled = false;
+            externalInputSourceId = null;
+            showInternalAnswerBox();
+            console.log('[ECW Bridge] External input disabled, internal answer box restored');
+          }
+          break;
       }
     }
   });
+
+  // Apply external input to current word
+  function applyExternalInput(value, sourceId) {
+    try {
+      if (typeof CurrentWord === 'undefined' || CurrentWord < 0) return;
+      
+      const wordIndex = CurrentWord;
+      const length = WordLength[wordIndex] || 0;
+      const x = WordX[wordIndex] || 0;
+      const y = WordY[wordIndex] || 0;
+      const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+      
+      // Fill cells with the value.
+      // Do NOT blank trailing cells when `value` is shorter than the word; those cells
+      // may hold intersecting letters from other words.
+      for (let i = 0; i < length; i++) {
+        const cellX = direction === 'across' ? x + i : x;
+        const cellY = direction === 'across' ? y : y + i;
+        const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+        const cell = document.getElementById(cellId);
+        
+        if (cell) {
+          if (i < value.length) {
+            const letter = value[i] || '';
+            cell.textContent = letter;
+            // Trigger input event for autosave/multiplayer hooks
+            const inputEvent = new Event('input', { bubbles: true });
+            cell.dispatchEvent(inputEvent);
+          }
+        }
+      }
+      
+      // Sync wordentry for ECW compatibility (OKClick, CheckClick, etc.)
+      const wordEntry = document.getElementById('wordentry');
+      if (wordEntry) {
+        wordEntry.value = value;
+      }
+      
+      // Update grid state
+      updateGridState();
+      
+      // Notify parent of update
+      sendMessage('EC_GRID_UPDATED', {
+        sourceId: sourceId,
+        updates: value.split('').map((letter, i) => ({
+          index: i,
+          value: letter
+        }))
+      });
+      
+      console.log('[ECW Bridge] Applied external input:', value);
+    } catch (e) {
+      console.error('[ECW Bridge] Error applying external input:', e);
+    }
+  }
+
+  // Clear current word
+  function clearCurrentWord() {
+    try {
+      if (typeof CurrentWord === 'undefined' || CurrentWord < 0) return;
+      
+      const wordIndex = CurrentWord;
+      const length = WordLength[wordIndex] || 0;
+      const x = WordX[wordIndex] || 0;
+      const y = WordY[wordIndex] || 0;
+      const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+      
+      for (let i = 0; i < length; i++) {
+        const cellX = direction === 'across' ? x + i : x;
+        const cellY = direction === 'across' ? y : y + i;
+        const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+        const cell = document.getElementById(cellId);
+        
+        if (cell) {
+          cell.textContent = '';
+        }
+      }
+      
+      updateGridState();
+      console.log('[ECW Bridge] Cleared current word');
+    } catch (e) {
+      console.error('[ECW Bridge] Error clearing word:', e);
+    }
+  }
+
+  // Handle external backspace
+  function handleExternalBackspace() {
+    try {
+      if (typeof CurrentWord === 'undefined' || CurrentWord < 0) return;
+      
+      const wordIndex = CurrentWord;
+      const length = WordLength[wordIndex] || 0;
+      const x = WordX[wordIndex] || 0;
+      const y = WordY[wordIndex] || 0;
+      const direction = wordIndex <= LastHorizontalWord ? 'across' : 'down';
+      
+      // Find last filled cell and clear it
+      for (let i = length - 1; i >= 0; i--) {
+        const cellX = direction === 'across' ? x + i : x;
+        const cellY = direction === 'across' ? y : y + i;
+        const cellId = 'c' + padNumber(cellX) + padNumber(cellY);
+        const cell = document.getElementById(cellId);
+        
+        if (cell && cell.textContent.trim()) {
+          cell.textContent = '';
+          updateGridState();
+          break;
+        }
+      }
+      
+      console.log('[ECW Bridge] Handled external backspace');
+    } catch (e) {
+      console.error('[ECW Bridge] Error handling backspace:', e);
+    }
+  }
   
   // Load grid state from parent
   function loadGridState(gridState) {
@@ -794,16 +1265,22 @@ function calculateOptimalCellSize() {
   }
 
   // Initialize when DOM is ready
+  // NOTE: Cells are NOT directly editable - input happens via answer box
+  // We hook into OKClick() to capture updates for multiplayer
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       initBridge();
-      setTimeout(calculateOptimalCellSize, 100);
+      setTimeout(() => {
+        calculateOptimalCellSize();
+      }, 100);
       observeBottomPanel();
       syncAnswerBoxToGrid();
     });
   } else {
     initBridge();
-    setTimeout(calculateOptimalCellSize, 100);
+    setTimeout(() => {
+      calculateOptimalCellSize();
+    }, 100);
     observeBottomPanel();
     syncAnswerBoxToGrid();
   }
@@ -819,9 +1296,8 @@ function calculateOptimalCellSize() {
     obs.observe(panel, { childList: true, subtree: true, attributes: true, characterData: true });
   }
 
-  // Disable Solve/Check buttons by overriding handlers
+  // Disable Solve button by overriding handler
   window.CheatClick = function() { /* no-op */ };
-  window.CheckClick = function() { /* no-op */ };
 
   // Live correctness highlighting while typing
   (function liveCorrectness() {
@@ -893,6 +1369,7 @@ function calculateOptimalCellSize() {
           td.textContent=correct;
           td.classList.add('ecw-letter-correct');
           setTimeout(()=>td.classList.remove('ecw-letter-correct'),600);
+          puzzleState.hintsUsed = (puzzleState.hintsUsed || 0) + 1;
           sendMessage('hint_used',{wordIndex:idx,position:i,letter:correct});
           break;
         }
@@ -940,6 +1417,10 @@ function calculateOptimalCellSize() {
         }
       }
       
+      if (revealedCount > 0) {
+        puzzleState.hintsUsed = (puzzleState.hintsUsed || 0) + 1;
+      }
+
       sendMessage('word_revealed', {
         wordIndex,
         word: word,

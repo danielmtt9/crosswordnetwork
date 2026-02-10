@@ -8,24 +8,20 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Gift, 
-  Star, 
-  Crown, 
-  Zap, 
-  Lock, 
-  Unlock,
+  Star,
+  Zap,
   Trophy,
   Award,
   Target,
   Calendar,
   Clock,
-  Users,
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AchievementReward {
   id: string;
-  type: 'points' | 'badge' | 'premium_feature' | 'hint_bonus' | 'special_event';
+  type: 'points' | 'badge' | 'hint_bonus' | 'special_event';
   name: string;
   description: string;
   icon: string;
@@ -46,13 +42,6 @@ interface UserRewards {
   spentPoints: number;
   unlockedRewards: AchievementReward[];
   availableRewards: AchievementReward[];
-  premiumFeatures: {
-    id: string;
-    name: string;
-    description: string;
-    unlocked: boolean;
-    requiredPoints: number;
-  }[];
   hintBonuses: {
     id: string;
     name: string;
@@ -143,8 +132,6 @@ export function AchievementRewards({ className }: AchievementRewardsProps) {
         return <Star className="h-5 w-5" />;
       case 'badge':
         return <Award className="h-5 w-5" />;
-      case 'premium_feature':
-        return <Crown className="h-5 w-5" />;
       case 'hint_bonus':
         return <Zap className="h-5 w-5" />;
       case 'special_event':
@@ -267,7 +254,6 @@ export function AchievementRewards({ className }: AchievementRewardsProps) {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="premium">Premium Features</TabsTrigger>
           <TabsTrigger value="hints">Hint Bonuses</TabsTrigger>
           <TabsTrigger value="events">Special Events</TabsTrigger>
         </TabsList>
@@ -386,52 +372,6 @@ export function AchievementRewards({ className }: AchievementRewardsProps) {
                       </div>
                     </div>
                   ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="premium" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Premium Features</CardTitle>
-              <CardDescription>
-                Unlock premium features with your achievement points
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {rewards.premiumFeatures.map((feature) => (
-                  <div key={feature.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        {feature.unlocked ? (
-                          <Unlock className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Lock className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{feature.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">
-                        {feature.requiredPoints} points
-                      </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => unlockReward(feature.id)}
-                        disabled={feature.unlocked || rewards.availablePoints < feature.requiredPoints}
-                      >
-                        {feature.unlocked ? 'Unlocked' : 'Unlock'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

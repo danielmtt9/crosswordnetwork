@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -18,7 +18,6 @@ export async function GET(_request: NextRequest) {
         name: true,
         email: true,
         role: true,
-        subscriptionStatus: true,
         createdAt: true,
         image: true,
       },
@@ -89,7 +88,6 @@ export async function GET(_request: NextRequest) {
         name: user.name,
         email: user.email,
         role: user.role,
-        subscriptionStatus: user.subscriptionStatus,
         joinDate: user.createdAt,
         avatar: user.image,
       },
@@ -110,5 +108,3 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ error: "Failed to load dashboard" }, { status: 500 });
   }
 }
-
-

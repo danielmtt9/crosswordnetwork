@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 // Removed direct import of isSuperAdmin - now using API route
-import { RoomLifecycleStats } from "@/components/RoomLifecycleStats";
 
 // System health status - this will be fetched from API
 const getSystemHealth = async () => {
@@ -267,28 +266,6 @@ export default function AdminPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900">
-                      <Users className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">
-                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "0"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">Active Rooms</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               <Card>
@@ -335,15 +312,6 @@ export default function AdminPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Room Lifecycle Statistics */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <RoomLifecycleStats />
-            </motion.section>
-
             {/* Recent Activity */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}

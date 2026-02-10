@@ -83,6 +83,7 @@ export function HintsMenu({
             )}
             disabled={disabled}
             aria-label="Hints menu"
+            data-testid="hints-menu"
           >
             <Lightbulb className="h-6 w-6" />
           </Button>
@@ -102,6 +103,7 @@ export function HintsMenu({
           variant="outline"
           className={cn('gap-2', className)}
           disabled={disabled}
+          data-testid="hints-menu"
         >
           <Lightbulb className="h-4 w-4" />
           <span>Hints</span>

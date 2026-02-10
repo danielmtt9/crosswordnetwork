@@ -1,0 +1,5 @@
+
+> crossword-network-temp@0.1.0 start
+> NODE_ENV=production node server.js
+
+> Ready on http://localhost:3004

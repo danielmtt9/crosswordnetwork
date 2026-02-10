@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function GET(
   request: NextRequest,
@@ -18,7 +20,7 @@ export async function GET(
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -73,6 +75,33 @@ export async function GET(
       });
     }
 
+    // Enforce 7-day expiration for unfinished puzzles.
+    if (!progress.isCompleted) {
+      const cutoff = new Date(Date.now() - SEVEN_DAYS_MS);
+      if (progress.startedAt && progress.startedAt < cutoff) {
+        await prisma.userProgress.deleteMany({
+          where: {
+            userId,
+            puzzleId,
+          },
+        });
+        return NextResponse.json({
+          progress: null,
+          completedAt: null,
+          completionTimeSeconds: null,
+          hintsUsed: 0,
+          score: 0,
+          lastPlayedAt: null,
+          isCompleted: false,
+          startedAt: null,
+          timesPlayed: 0,
+          bestTimeSeconds: null,
+          totalAccuracy: 100,
+          expired: true,
+        });
+      }
+    }
+
     return NextResponse.json({
       progress: progress,
       completedAt: progress.completedAt,
@@ -110,7 +139,7 @@ export async function POST(
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session) {
       return NextResponse.json(
         { error: "Unauthorized" },

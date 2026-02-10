@@ -30,7 +30,6 @@ interface PuzzleData {
   filename: string;
   original_filename: string;
   file_path: string;
-  tier: string | null;
   category: string | null;
   difficulty: string | null;
   tags: string | null;
@@ -74,8 +73,7 @@ export default function AdminPuzzlesPage() {
     title: '',
     description: '',
     difficulty: 'medium',
-    category: '',
-    tier: 'free'
+    category: ''
   });
 
   useEffect(() => {
@@ -102,7 +100,6 @@ export default function AdminPuzzlesPage() {
     setEditData({
       title: puzzle.title,
       description: puzzle.description,
-      tier: puzzle.tier,
       category: puzzle.category,
       difficulty: puzzle.difficulty,
       estimated_solve_time: puzzle.estimated_solve_time,
@@ -161,7 +158,7 @@ export default function AdminPuzzlesPage() {
       
       // Try to extract title from filename if not already set
       if (!uploadForm.title) {
-        const nameWithoutExt = file.name.replace(/\.json$/i, '');
+        const nameWithoutExt = file.name.replace(/\.(html?)$/i, '');
         setUploadForm(prev => ({ ...prev, title: nameWithoutExt }));
       }
     }
@@ -170,11 +167,6 @@ export default function AdminPuzzlesPage() {
   const handleUpload = async () => {
     if (!selectedFile) {
       setUploadError("Please select a file");
-      return;
-    }
-
-    if (!uploadForm.tier) {
-      setUploadError("Please select a tier (free or premium)");
       return;
     }
 
@@ -189,7 +181,6 @@ export default function AdminPuzzlesPage() {
       formData.append('description', uploadForm.description);
       formData.append('difficulty', uploadForm.difficulty);
       formData.append('category', uploadForm.category);
-      formData.append('tier', uploadForm.tier);
 
       const response = await fetch('/api/admin/puzzles/upload', {
         method: 'POST',
@@ -210,8 +201,7 @@ export default function AdminPuzzlesPage() {
         title: '',
         description: '',
         difficulty: 'medium',
-        category: '',
-        tier: 'free'
+        category: ''
       });
       
       // Refresh puzzles list
@@ -236,8 +226,7 @@ export default function AdminPuzzlesPage() {
       title: '',
       description: '',
       difficulty: 'medium',
-      category: '',
-      tier: 'free'
+      category: ''
     });
     setUploadError(null);
     setUploadSuccess(null);
@@ -292,14 +281,6 @@ export default function AdminPuzzlesPage() {
       case 'easy': return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case 'medium': return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case 'hard': return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
-
-  const getTierColor = (tier: string | null) => {
-    switch (tier) {
-      case 'free': return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case 'premium': return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
@@ -378,18 +359,6 @@ export default function AdminPuzzlesPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Tier *</label>
-                        <select
-                          value={uploadForm.tier}
-                          onChange={(e) => setUploadForm(prev => ({ ...prev, tier: e.target.value }))}
-                          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="free">Free</option>
-                          <option value="premium">Premium</option>
-                        </select>
-                      </div>
-                      
-                      <div className="space-y-2">
                         <label className="text-sm font-medium">Difficulty</label>
                         <select
                           value={uploadForm.difficulty}
@@ -453,7 +422,7 @@ export default function AdminPuzzlesPage() {
                       </Button>
                       <Button
                         onClick={handleUpload}
-                        disabled={uploading || !selectedFile || !uploadForm.title || !uploadForm.tier}
+                        disabled={uploading || !selectedFile || !uploadForm.title}
                       >
                         {uploading ? (
                           <>
@@ -578,9 +547,6 @@ export default function AdminPuzzlesPage() {
                           <Badge className={getDifficultyColor(puzzle.difficulty)}>
                             {puzzle.difficulty || "Unknown"}
                           </Badge>
-                          <Badge className={getTierColor(puzzle.tier)}>
-                            {puzzle.tier || "Unknown"}
-                          </Badge>
                           <Badge variant={puzzle.is_active ? "default" : "secondary"}>
                             {puzzle.is_active ? "Active" : "Inactive"}
                           </Badge>
@@ -633,15 +599,6 @@ export default function AdminPuzzlesPage() {
                               <option value="easy">Easy</option>
                               <option value="medium">Medium</option>
                               <option value="hard">Hard</option>
-                            </select>
-                            <select
-                              value={editData.tier || ""}
-                              onChange={(e) => setEditData({...editData, tier: e.target.value})}
-                              className="rounded-md border border-border bg-background px-2 py-1 text-sm"
-                            >
-                              <option value="">Tier</option>
-                              <option value="free">Free</option>
-                              <option value="premium">Premium</option>
                             </select>
                             <Button
                               size="sm"

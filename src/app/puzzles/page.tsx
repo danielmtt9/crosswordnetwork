@@ -12,7 +12,7 @@ import {
   Filter, 
   Clock, 
   Star, 
-  Lock, 
+  Lock,
   Users,
   Puzzle,
   Trophy,
@@ -25,7 +25,6 @@ interface PuzzleData {
   title: string;
   description: string | null;
   difficulty: string | null;
-  tier: string | null;
   category: string | null;
   play_count: number | null;
   completion_rate: number | null;
@@ -54,24 +53,205 @@ const difficultyColors = {
   hard: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
 };
 
-const accessLevelColors = {
-  free: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  premium: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-};
-
 export default function PuzzlesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
-  const [selectedAccess, setSelectedAccess] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [puzzles, setPuzzles] = useState<PuzzleData[]>([]);
+  const [storageScope, setStorageScope] = useState<string>('guest');
+  const [continuePuzzles, setContinuePuzzles] = useState<Array<{
+    puzzleId: number;
+    title: string;
+    difficulty: string | null;
+    category: string | null;
+    remainingMs: number;
+    startedAt: string;
+    lastPlayedAt: string | null;
+    source: 'server' | 'local';
+  }>>([]);
+  const [continueLoading, setContinueLoading] = useState(false);
   const [filters, setFilters] = useState<PuzzlesResponse["filters"]>({
     categories: [],
     difficulties: ["easy", "medium", "hard"],
-    tiers: ["free", "premium"]
+    tiers: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Determine current user (if signed in) to scope "Continue Puzzle".
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (!res.ok) return;
+        const session = await res.json();
+        const userId = session?.user?.id;
+        if (!cancelled && typeof userId === 'string' && userId.length > 0) {
+          setStorageScope(userId);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    // Guest-mode "Continue" uses localStorage written by the puzzle page.
+    // If the explicit pointer is missing, scan for the most recently saved progress key.
+    // Now: build a list of in-progress puzzles (server if signed-in, plus local fallback).
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    const loadLocal = async () => {
+      const localItems: Array<{
+        puzzleId: number;
+        title?: string;
+        difficulty?: string | null;
+        category?: string | null;
+        startedAt: string;
+        lastPlayedAt: string | null;
+        remainingMs: number;
+      }> = [];
+
+      try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const key = window.localStorage.key(i);
+          if (!key || !key.startsWith('cw:progress:')) continue;
+          if (!key.endsWith(`:${storageScope}`)) continue;
+
+          const raw = window.localStorage.getItem(key);
+          if (!raw) continue;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed?.isCompleted === true) continue;
+            const pid = typeof parsed?.puzzleId === 'number' ? parsed.puzzleId : parseInt(String(parsed?.puzzleId || ''), 10);
+            if (Number.isNaN(pid)) continue;
+
+            const startedAtRaw = String(parsed?.startedAt || parsed?.savedAt || '');
+            const startedAtMs = Date.parse(startedAtRaw);
+            if (!Number.isNaN(startedAtMs) && now - startedAtMs > SEVEN_DAYS_MS) {
+              // Expired; remove to keep list clean.
+              try { window.localStorage.removeItem(key); } catch {}
+              continue;
+            }
+
+            const expiresAtMs = !Number.isNaN(startedAtMs) ? startedAtMs + SEVEN_DAYS_MS : now;
+            const remainingMs = Math.max(0, expiresAtMs - now);
+
+            localItems.push({
+              puzzleId: pid,
+              title: typeof parsed?.puzzleTitle === 'string' ? parsed.puzzleTitle : undefined,
+              difficulty: parsed?.puzzleDifficulty ?? null,
+              category: parsed?.puzzleCategory ?? null,
+              startedAt: startedAtRaw || new Date().toISOString(),
+              lastPlayedAt: typeof parsed?.savedAt === 'string' ? parsed.savedAt : null,
+              remainingMs,
+            });
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      // Fill missing titles from API.
+      const enriched = await Promise.all(
+        localItems.map(async (it) => {
+          if (it.title) return it;
+          try {
+            const res = await fetch(`/api/puzzles/${it.puzzleId}`);
+            if (!res.ok) return it;
+            const p = await res.json();
+            return {
+              ...it,
+              title: p?.title || `Puzzle #${it.puzzleId}`,
+              difficulty: p?.difficulty ?? it.difficulty ?? null,
+              category: p?.category ?? it.category ?? null,
+            };
+          } catch {
+            return it;
+          }
+        })
+      );
+
+      return enriched
+        .filter((it) => it.remainingMs > 0)
+        .map((it) => ({
+          puzzleId: it.puzzleId,
+          title: it.title || `Puzzle #${it.puzzleId}`,
+          difficulty: it.difficulty ?? null,
+          category: it.category ?? null,
+          remainingMs: it.remainingMs,
+          startedAt: it.startedAt,
+          lastPlayedAt: it.lastPlayedAt,
+          source: 'local' as const,
+        }));
+    };
+
+    const loadServer = async () => {
+      try {
+        const res = await fetch('/api/puzzles/in-progress');
+        if (!res.ok) return [];
+        const data = await res.json();
+        const rows = Array.isArray(data?.puzzles) ? data.puzzles : [];
+        return rows.map((row: any) => ({
+          puzzleId: row?.puzzle?.id,
+          title: row?.puzzle?.title,
+          difficulty: row?.puzzle?.difficulty ?? null,
+          category: row?.puzzle?.category ?? null,
+          remainingMs: row?.progress?.remainingMs ?? 0,
+          startedAt: row?.progress?.startedAt,
+          lastPlayedAt: row?.progress?.lastPlayedAt ?? null,
+          source: 'server' as const,
+        })).filter((r: any) => typeof r.puzzleId === 'number' && typeof r.title === 'string' && r.remainingMs > 0);
+      } catch {
+        return [];
+      }
+    };
+
+    (async () => {
+      setContinueLoading(true);
+      const [server, local] = await Promise.all([loadServer(), loadLocal()]);
+      const seen = new Set<number>();
+      const merged = [...server, ...local].filter((it) => {
+        if (seen.has(it.puzzleId)) return false;
+        seen.add(it.puzzleId);
+        return true;
+      });
+      merged.sort((a, b) => (b.lastPlayedAt || '').localeCompare(a.lastPlayedAt || '') || b.remainingMs - a.remainingMs);
+      setContinuePuzzles(merged);
+      setContinueLoading(false);
+    })();
+  }, [storageScope]);
+
+  const discardContinuePuzzle = async (puzzleId: number, source: 'server' | 'local') => {
+    try {
+      if (source === 'server') {
+        await fetch(`/api/puzzles/in-progress/${puzzleId}`, { method: 'DELETE' });
+      } else {
+        window.localStorage.removeItem(`cw:progress:${puzzleId}:${storageScope}`);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setContinuePuzzles((prev) => prev.filter((p) => p.puzzleId !== puzzleId));
+    }
+  };
+
+  const formatRemaining = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h ${minutes}m left`;
+    return `${minutes}m left`;
+  };
 
   const fetchPuzzles = async () => {
     try {
@@ -79,7 +259,6 @@ export default function PuzzlesPage() {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
       if (selectedDifficulty !== "all") params.append("difficulty", selectedDifficulty);
-      if (selectedAccess !== "all") params.append("tier", selectedAccess);
       if (selectedCategory !== "all") params.append("category", selectedCategory);
 
       const response = await fetch(`/api/puzzles?${params.toString()}`);
@@ -97,7 +276,7 @@ export default function PuzzlesPage() {
 
   useEffect(() => {
     fetchPuzzles();
-  }, [searchTerm, selectedDifficulty, selectedAccess, selectedCategory]);
+  }, [searchTerm, selectedDifficulty, selectedCategory]);
 
   // Get featured puzzles (top 3 by play count)
   const featuredPuzzles = puzzles
@@ -105,7 +284,7 @@ export default function PuzzlesPage() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-background to-orange-50/30 dark:from-amber-950/10 dark:via-background dark:to-orange-950/10">
       {/* Header */}
       <section className="border-b bg-card/50 backdrop-blur-xl">
         <div className="container mx-auto max-w-7xl px-4 py-12">
@@ -121,6 +300,63 @@ export default function PuzzlesPage() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Discover crosswords for every mood and skill level. From quick coffee breaks to deep dives.
             </p>
+
+            {(continueLoading || continuePuzzles.length > 0) && (
+              <div className="pt-4">
+                <div className="mx-auto max-w-3xl rounded-2xl border bg-card/40 backdrop-blur-xl p-4 text-left">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <h2 className="text-base font-semibold">Continue Puzzles</h2>
+                      <span className="text-xs text-muted-foreground">(7-day limit)</span>
+                    </div>
+                    {continueLoading && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading…
+                      </div>
+                    )}
+                  </div>
+
+                  {continuePuzzles.length > 0 ? (
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {continuePuzzles.slice(0, 6).map((p) => (
+                        <div key={p.puzzleId} className="rounded-xl border bg-background/50 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate font-semibold">{p.title}</div>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                {p.difficulty && <span className="rounded bg-muted px-2 py-0.5">{p.difficulty}</span>}
+                                {p.category && <span className="rounded bg-muted px-2 py-0.5">{p.category}</span>}
+                                <span className="rounded bg-muted px-2 py-0.5">{formatRemaining(p.remainingMs)}</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <Button asChild size="sm">
+                                <Link href={`/puzzles/${p.puzzleId}`}>Continue</Link>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => discardContinuePuzzle(p.puzzleId, p.source)}
+                              >
+                                Discard
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    !continueLoading && (
+                      <div className="mt-3 text-sm text-muted-foreground">
+                        No in-progress puzzles found.
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -164,19 +400,6 @@ export default function PuzzlesPage() {
                 {filters.difficulties.map((difficulty) => (
                   <option key={difficulty} value={difficulty}>
                     {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedAccess}
-                onChange={(e) => setSelectedAccess(e.target.value)}
-                className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-              >
-                <option value="all">All Access</option>
-                {filters.tiers.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {tier.charAt(0).toUpperCase() + tier.slice(1)}
                   </option>
                 ))}
               </select>
@@ -232,11 +455,6 @@ export default function PuzzlesPage() {
                                       {puzzle.difficulty.charAt(0).toUpperCase() + puzzle.difficulty.slice(1)}
                                     </Badge>
                                   )}
-                                  {puzzle.tier && (
-                                    <Badge className={accessLevelColors[puzzle.tier as keyof typeof accessLevelColors]}>
-                                      {puzzle.tier.charAt(0).toUpperCase() + puzzle.tier.slice(1)}
-                                    </Badge>
-                                  )}
                                 </div>
                               </div>
                               <Star className="h-5 w-5 text-yellow-500 fill-current" />
@@ -273,18 +491,9 @@ export default function PuzzlesPage() {
                             )}
 
                             <Button asChild className="w-full">
-                              <Link href={`/puzzles/${puzzle.id}`}>
-                                {puzzle.tier === "premium" ? (
-                                  <>
-                                    <Lock className="mr-2 h-4 w-4" />
-                                    Premium Puzzle
-                                  </>
-                                ) : (
-                                  <>
-                                    <Puzzle className="mr-2 h-4 w-4" />
-                                    Start Puzzle
-                                  </>
-                                )}
+                              <Link href={`/puzzles/${puzzle.id}?fresh=1`}>
+                                <Puzzle className="mr-2 h-4 w-4" />
+                                Start Puzzle
                               </Link>
                             </Button>
                           </CardContent>
@@ -337,11 +546,6 @@ export default function PuzzlesPage() {
                                     {puzzle.difficulty.charAt(0).toUpperCase() + puzzle.difficulty.slice(1)}
                                   </Badge>
                                 )}
-                                {puzzle.tier && (
-                                  <Badge className={accessLevelColors[puzzle.tier as keyof typeof accessLevelColors]}>
-                                    {puzzle.tier.charAt(0).toUpperCase() + puzzle.tier.slice(1)}
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -376,19 +580,10 @@ export default function PuzzlesPage() {
                             </div>
                           )}
 
-                          <Button asChild className="w-full" variant={puzzle.tier === "premium" ? "outline" : "default"}>
-                            <Link href={`/puzzles/${puzzle.id}`}>
-                              {puzzle.tier === "premium" ? (
-                                <>
-                                  <Lock className="mr-2 h-4 w-4" />
-                                  Premium Puzzle
-                                </>
-                              ) : (
-                                <>
-                                  <Puzzle className="mr-2 h-4 w-4" />
-                                  Start Puzzle
-                                </>
-                              )}
+                          <Button asChild className="w-full" variant="default">
+                            <Link href={`/puzzles/${puzzle.id}?fresh=1`}>
+                              <Puzzle className="mr-2 h-4 w-4" />
+                              Start Puzzle
                             </Link>
                           </Button>
                         </CardContent>

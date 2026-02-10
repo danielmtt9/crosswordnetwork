@@ -39,7 +39,14 @@ export async function GET(
 
     // Read the puzzle file content
     try {
-      const filePath = path.join(process.cwd(), puzzle.file_path);
+      // `puzzle.file_path` may be stored as either:
+      // - "public/puzzles/..." (current upload implementation)
+      // - "puzzles/..." (legacy/alternate)
+      // Normalize to an absolute FS path.
+      const storedPath = (puzzle.file_path || '').replace(/^\//, '');
+      const filePath = storedPath.startsWith('public/')
+        ? path.join(process.cwd(), storedPath)
+        : path.join(process.cwd(), 'public', storedPath);
       const content = fs.readFileSync(filePath, 'utf-8');
       
       // Check if this is an iframe request

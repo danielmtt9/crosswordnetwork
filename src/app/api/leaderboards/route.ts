@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeGlobalLeaderboard } from "@/lib/leaderboards/compute";
+import type { LeaderboardPeriod, LeaderboardScope, LeaderboardMetric } from "@/lib/leaderboards/types";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -33,13 +35,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Get leaderboard entries from database
+    // Type-safe where clause using Prisma types
+    const whereClause: Prisma.LeaderboardEntryWhereInput = {
+      period: period as LeaderboardPeriod,
+      scope: scope as LeaderboardScope,
+      scopeId: null, // For global leaderboards
+      metric: metric as LeaderboardMetric,
+    };
+
     let entries = await prisma.leaderboardEntry.findMany({
-      where: {
-        period: period as any,
-        scope: scope as any,
-        scopeId: null, // For global leaderboards
-        metric: metric as any,
-      },
+      where: whereClause,
       orderBy: {
         rank: 'asc',
       },
@@ -49,17 +54,12 @@ export async function GET(request: NextRequest) {
     // If no entries found, compute them
     if (entries.length === 0 && scope === 'GLOBAL') {
       const computedEntries = await computeGlobalLeaderboard(
-        period as any,
-        metric as any,
+        period as LeaderboardPeriod,
+        metric as LeaderboardMetric,
         limit
       );
       entries = await prisma.leaderboardEntry.findMany({
-        where: {
-          period: period as any,
-          scope: scope as any,
-          scopeId: null,
-          metric: metric as any,
-        },
+        where: whereClause,
         orderBy: {
           rank: 'asc',
         },

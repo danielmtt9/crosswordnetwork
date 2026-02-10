@@ -1,26 +1,25 @@
-import { withAuth } from 'next-auth/middleware';
+import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token as { role?: string } | null;
-    const path = req.nextUrl.pathname;
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
 
-    if (path.startsWith('/admin')) {
-      if (token?.role !== 'ADMIN') {
-        return NextResponse.redirect(new URL('/unauthorized', req.url));
-      }
-    }
+  const isApiAuthRoute = nextUrl.pathname.startsWith('/api/auth');
+  const isPublicRoute = ['/', '/waitlist', '/signin', '/signup'].includes(nextUrl.pathname);
 
+  if (isApiAuthRoute || isPublicRoute) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
   }
-);
+
+  if (!isLoggedIn && !isPublicRoute) {
+    return NextResponse.redirect(new URL('/signin', nextUrl));
+  }
+  
+  return NextResponse.next();
+});
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  // Allow static assets through without auth so puzzle iframes can load bridge scripts.
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|scripts|puzzles).*)'],
 };

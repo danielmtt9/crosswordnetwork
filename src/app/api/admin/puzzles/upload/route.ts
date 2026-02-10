@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAuditLog } from "@/lib/auditLog";
 import formidable from "formidable";
@@ -13,6 +13,7 @@ import {
   deletePuzzleFile,
   PuzzleContent
 } from "@/lib/fileProcessing";
+import { extractCluesFromHTML, formatCluesForStorage } from "@/lib/serverClueExtraction";
 
 // Disable Next.js body parsing for file uploads
 export const config = {
@@ -22,7 +23,7 @@ export const config = {
 };
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   
   if (!session || (session as any).role !== 'ADMIN') {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -40,17 +41,10 @@ export async function POST(request: NextRequest) {
     const description = formData.get('description') as string;
     const difficulty = formData.get('difficulty') as string;
     const category = formData.get('category') as string;
-    const tier = formData.get('tier') as string;
 
     // Validate required fields
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    if (!tier || !['free', 'premium'].includes(tier)) {
-      return NextResponse.json({ 
-        error: "Tier is required and must be 'free' or 'premium'" 
-      }, { status: 400 });
     }
 
     // Validate file type
@@ -112,6 +106,20 @@ export async function POST(request: NextRequest) {
       console.warn('Failed to parse grid dimensions from puzzle content:', error);
     }
 
+    // Extract clues from HTML content
+    let cluesJson: string | null = null;
+    try {
+      const extractedClues = extractCluesFromHTML(fileContent);
+      cluesJson = formatCluesForStorage(extractedClues);
+      console.log('[PuzzleUpload] Extracted clues:', {
+        across: extractedClues.across.length,
+        down: extractedClues.down.length
+      });
+    } catch (error) {
+      console.warn('Failed to extract clues from puzzle content:', error);
+      // Continue with upload even if clue extraction fails
+    }
+
     // Prepare puzzle data for database
     const puzzleData = {
       title: title || 'Untitled Puzzle',
@@ -119,7 +127,6 @@ export async function POST(request: NextRequest) {
       filename: filename,
       original_filename: file.name,
       file_path: savedFilePath,
-      tier: tier,
       category: category || null,
       difficulty: difficulty || 'medium',
       uploaded_by: (session as any).userId,
@@ -127,6 +134,7 @@ export async function POST(request: NextRequest) {
       grid_width: gridWidth,
       grid_height: gridHeight,
       tags: JSON.stringify([]), // Default empty tags, admin can update
+      clues: cluesJson,
       play_count: 0,
       completion_rate: 0.00,
       avg_solve_time: 0.00,
@@ -155,7 +163,6 @@ export async function POST(request: NextRequest) {
         title: puzzle.title,
         file_path: puzzle.file_path,
         difficulty: puzzle.difficulty,
-        tier: puzzle.tier,
         category: puzzle.category
       }
     }, { status: 201 });

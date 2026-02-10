@@ -1,0 +1,11 @@
+
+> crossword-network-temp@0.1.0 dev
+> node server.js
+
+> Ready on http://localhost:3004 (listening on 0.0.0.0:3004)
+(node:773242) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Compiled /middleware in 467ms (273 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 2.5s (1666 modules)
+ HEAD / 200 in 3126ms

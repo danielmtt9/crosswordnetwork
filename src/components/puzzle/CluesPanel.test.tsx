@@ -92,11 +92,15 @@ describe('CluesPanel', () => {
 
     const firstAcrossClue = screen.getByText('Capital of France');
     fireEvent.click(firstAcrossClue);
-    expect(handleClueClick).toHaveBeenCalledWith('across', 1);
+    expect(handleClueClick).toHaveBeenCalledWith(
+      expect.objectContaining({ direction: 'across', number: 1, text: 'Capital of France' })
+    );
 
     const firstDownClue = screen.getByText('Programming language');
     fireEvent.click(firstDownClue);
-    expect(handleClueClick).toHaveBeenCalledWith('down', 1);
+    expect(handleClueClick).toHaveBeenCalledWith(
+      expect.objectContaining({ direction: 'down', number: 1, text: 'Programming language' })
+    );
   });
 
   it('should highlight selected clue', () => {
@@ -111,9 +115,10 @@ describe('CluesPanel', () => {
     const selectedClue = screen
       .getByText('Capital of France')
       .closest('button');
-    expect(selectedClue).toHaveClass('bg-primary/10');
-    expect(selectedClue).toHaveClass('border-l-2');
+    expect(selectedClue).toHaveAttribute('aria-pressed', 'true');
     expect(selectedClue).toHaveClass('border-primary');
+    // The UI uses an amber selection background rather than `bg-primary/10`.
+    expect(selectedClue?.className).toMatch(/bg-amber-100\/80|dark:bg-amber-900\/30/);
   });
 
   it('should apply custom className', () => {

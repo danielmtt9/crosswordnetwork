@@ -1,5 +1,4 @@
 export const PUZZLE_TAGS = {
-  MULTIPLAYER: 'multiplayer',
   DAILY: 'daily',
   THEMED: 'themed',
   BEGINNER_FRIENDLY: 'beginner-friendly',
@@ -33,10 +32,6 @@ export function hasTags(puzzle: Puzzle, tags: string[]): boolean {
   return tags.every(tag => puzzleTags.includes(tag));
 }
 
-export function isMultiplayerOnly(puzzle: Puzzle): boolean {
-  return hasTags(puzzle, [PUZZLE_TAGS.MULTIPLAYER]);
-}
-
 export function hasAnyTag(puzzle: Puzzle, tags: string[]): boolean {
   const puzzleTags = parseTags(puzzle.tags);
   return tags.some(tag => puzzleTags.includes(tag));
@@ -44,7 +39,6 @@ export function hasAnyTag(puzzle: Puzzle, tags: string[]): boolean {
 
 export function getTagDisplayName(tag: string): string {
   const displayNames: Record<string, string> = {
-    [PUZZLE_TAGS.MULTIPLAYER]: 'Multiplayer Only',
     [PUZZLE_TAGS.DAILY]: 'Daily Puzzle',
     [PUZZLE_TAGS.THEMED]: 'Themed',
     [PUZZLE_TAGS.BEGINNER_FRIENDLY]: 'Beginner Friendly',
@@ -59,7 +53,6 @@ export function getTagDisplayName(tag: string): string {
 
 export function getTagColor(tag: string): string {
   const colors: Record<string, string> = {
-    [PUZZLE_TAGS.MULTIPLAYER]: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     [PUZZLE_TAGS.DAILY]: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
     [PUZZLE_TAGS.THEMED]: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     [PUZZLE_TAGS.BEGINNER_FRIENDLY]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',

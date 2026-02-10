@@ -6,15 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { 
-  Trophy, 
-  Star, 
-  Crown, 
+  Trophy,
+  Star,
   Zap, 
   Gift,
   Target,
   Calendar,
   Clock,
-  Users,
   Award,
   Sparkles,
   PartyPopper
@@ -30,7 +28,7 @@ interface Milestone {
   target: number;
   current: number;
   reward: {
-    type: 'points' | 'badge' | 'premium_feature' | 'special_title';
+    type: 'points' | 'badge' | 'special_title';
     value: number;
     name: string;
   };

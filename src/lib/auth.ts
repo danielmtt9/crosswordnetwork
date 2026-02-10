@@ -1,12 +1,18 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+import { auth } from '@/auth';
 
 export async function getAuthSession() {
-  return await getServerSession(authOptions);
+  const session = await auth();
+  // Convert NextAuth v5 session to compatible format
+  if (session?.user) {
+    return {
+      ...session,
+      user: {
+        ...session.user,
+        id: session.user.id || session.userId,
+      },
+      userId: session.user.id || session.userId,
+      role: (session as any).role || session.user.role,
+    };
+  }
+  return session;
 }
-
-export function isPremiumUser(session: any): boolean {
-  return session?.user?.role === 'PREMIUM' || session?.user?.role === 'ADMIN';
-}
-
-export { authOptions };

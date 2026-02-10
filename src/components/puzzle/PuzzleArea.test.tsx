@@ -2,14 +2,16 @@ import { render, screen, act, waitFor } from '@testing-library/react';
 import { PuzzleArea } from './PuzzleArea';
 
 describe('PuzzleArea', () => {
-  const mockPuzzleUrl = 'https://example.com/puzzle.html';
+  // In production this is typically a path stored under `public/...` in the DB.
+  const mockPuzzleUrl = 'public/puzzles/test-puzzle.html';
 
   it('should render iframe with correct src', () => {
     render(<PuzzleArea puzzleUrl={mockPuzzleUrl} />);
 
     const iframe = screen.getByTitle('Crossword Puzzle');
     expect(iframe).toBeInTheDocument();
-    expect(iframe).toHaveAttribute('src', mockPuzzleUrl);
+    // `PuzzleArea` normalizes `public/...` to `/<path>` for Next.js static serving.
+    expect(iframe).toHaveAttribute('src', '/puzzles/test-puzzle.html');
   });
 
   it('should set initial height to minHeight', () => {

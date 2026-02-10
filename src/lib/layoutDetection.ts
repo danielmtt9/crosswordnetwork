@@ -2,35 +2,22 @@ import { DeviceType } from '@/hooks/useDeviceType';
 import { GameMode } from '@/hooks/useGameMode';
 
 export type LayoutType = 
-  | 'desktop-multiplayer'
   | 'desktop-single'
-  | 'mobile-multiplayer'
-  | 'mobile-single'
-  | 'tablet-multiplayer'
-  | 'tablet-single';
+  | 'mobile-single';
 
 /**
  * Determines the appropriate layout based on device type and game mode.
  * 
  * @param deviceType - Current device type (mobile, tablet, desktop)
- * @param gameMode - Current game mode (single, multiplayer)
+ * @param gameMode - Current game mode (single)
  * @returns The layout type to use
  */
-export function getLayoutType(deviceType: DeviceType, gameMode: GameMode): LayoutType {
+export function getLayoutType(deviceType: DeviceType, _gameMode: GameMode): LayoutType {
   // Tablet uses same layouts as mobile for simplicity
-  const normalizedDevice = deviceType === 'tablet' ? 'mobile' : deviceType;
-  
-  return `${normalizedDevice}-${gameMode}` as LayoutType;
-}
-
-/**
- * Checks if the current layout should show a multiplayer panel.
- * 
- * @param layoutType - Current layout type
- * @returns True if multiplayer panel should be shown
- */
-export function shouldShowMultiplayerPanel(layoutType: LayoutType): boolean {
-  return layoutType.includes('multiplayer');
+  if (deviceType === 'desktop') {
+    return 'desktop-single';
+  }
+  return 'mobile-single';
 }
 
 /**
@@ -41,7 +28,7 @@ export function shouldShowMultiplayerPanel(layoutType: LayoutType): boolean {
  * @returns True if tabs should be used for clues
  */
 export function shouldUseTabbedClues(layoutType: LayoutType): boolean {
-  return layoutType.startsWith('mobile') || layoutType.startsWith('tablet');
+  return layoutType === 'mobile-single';
 }
 
 /**
@@ -52,18 +39,11 @@ export function shouldUseTabbedClues(layoutType: LayoutType): boolean {
  */
 export function getGridTemplate(layoutType: LayoutType): string {
   switch (layoutType) {
-    case 'desktop-multiplayer':
-      // Clues (25%) | Puzzle (50%) | Multiplayer Panel (25%)
-      return '1fr 2fr 1fr';
-    
     case 'desktop-single':
       // Clues (30%) | Puzzle (70%)
       return '3fr 7fr';
     
-    case 'mobile-multiplayer':
     case 'mobile-single':
-    case 'tablet-multiplayer':
-    case 'tablet-single':
       // Mobile/tablet uses stacked layout (single column)
       return '1fr';
     
@@ -90,16 +70,10 @@ export function shouldUseCluesSidebar(deviceType: DeviceType): boolean {
  */
 export function getPuzzleMaxWidth(layoutType: LayoutType): string {
   switch (layoutType) {
-    case 'desktop-multiplayer':
-      return '800px';
-    
     case 'desktop-single':
       return '1000px';
     
-    case 'mobile-multiplayer':
     case 'mobile-single':
-    case 'tablet-multiplayer':
-    case 'tablet-single':
       return '100%';
     
     default:
@@ -114,8 +88,5 @@ export function getPuzzleMaxWidth(layoutType: LayoutType): string {
  * @returns Array of component names in priority order
  */
 export function getMobileComponentPriority(gameMode: GameMode): string[] {
-  if (gameMode === 'multiplayer') {
-    return ['puzzle', 'clues', 'chat', 'players'];
-  }
   return ['puzzle', 'clues'];
 }

@@ -19,6 +19,10 @@ model User {
   role                  String               @default("FREE")
   subscriptionStatus    String               @default("TRIAL")
   trialEndsAt           DateTime?
+  stripeCustomerId      String?              @unique
+  stripeSubscriptionId  String?              @unique
+  stripePriceId         String?
+  stripeCurrentPeriodEnd DateTime?
   requirePasswordChange Boolean              @default(false)
   accountStatus         String               @default("ACTIVE")
   suspendedAt           DateTime?
@@ -43,7 +47,9 @@ model User {
   invitesReceived       RoomInvite[]         @relation("InvitesReceived")
   userAchievements      UserAchievement[]
   userProgress          UserProgress[]
+  hintUsageEvents       HintUsageEvent[]
   userStats             UserStats?
+  emailVerifications    EmailVerification[]
 
   @@index([accountStatus])
   @@index([suspendedAt])
@@ -189,26 +195,28 @@ model LoginAttempt {
 }
 
 model Puzzle {
-  id                   Int               @id @default(autoincrement())
-  title                String            @db.VarChar(255)
-  description          String?           @db.Text
-  filename             String            @db.VarChar(255)
-  original_filename    String            @db.VarChar(255)
-  file_path            String            @db.VarChar(500)
-  tier                 String?           @db.VarChar(10)
-  category             String?           @db.VarChar(100)
-  difficulty           String?           @db.VarChar(10)
+  id                   Int                @id @default(autoincrement())
+  title                String             @db.VarChar(255)
+  description          String?            @db.Text
+  filename             String             @db.VarChar(255)
+  original_filename    String             @db.VarChar(255)
+  file_path            String             @db.VarChar(500)
+  tier                 String?            @db.VarChar(10)
+  category             String?            @db.VarChar(100)
+  difficulty           String?            @db.VarChar(10)
   uploaded_by          String?
-  upload_date          DateTime?         @default(now())
-  is_active            Boolean?          @default(true)
-  play_count           Int?              @default(0)
-  completion_rate      Decimal?          @default(0.00) @db.Decimal(5, 2)
-  estimated_solve_time Int?              @default(15)
-  avg_solve_time       Decimal?          @default(0.00) @db.Decimal(5, 2)
-  best_score           Int?              @default(0)
+  upload_date          DateTime?          @default(now())
+  is_active            Boolean?           @default(true)
+  play_count           Int?               @default(0)
+  completion_rate      Decimal?           @default(0.00) @db.Decimal(5, 2)
+  estimated_solve_time Int?               @default(15)
+  avg_solve_time       Decimal?           @default(0.00) @db.Decimal(5, 2)
+  best_score           Int?               @default(0)
   grid_width           Int?
   grid_height          Int?
-  tags                 String?           @db.Text
+  tags                 String?            @db.Text
+  clues                String?            @db.LongText
+  clueCache            PuzzleClueCache[]
   multiplayerRooms     MultiplayerRoom[]
 
   @@map("puzzles")
@@ -237,6 +245,20 @@ model UserProgress {
   @@unique([userId, puzzleId])
   @@index([lastAutoSave])
   @@map("user_progress")
+}
+
+model HintUsageEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  guestId   String?
+  hintType  HintType
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, hintType, createdAt])
+  @@index([guestId, hintType, createdAt])
+  @@map("hint_usage_events")
 }
 
 model AuditLog {
@@ -310,6 +332,8 @@ model RoomParticipant {
   displayName    String          @db.VarChar(100)
   avatarUrl      String?         @db.VarChar(255)
   cursorPosition String?         @db.VarChar(20)
+  completedCells String?         @db.Text
+  lastActiveAt   DateTime        @default(now())
   isOnline       Boolean         @default(true)
   joinedAt       DateTime        @default(now())
   leftAt         DateTime?
@@ -318,6 +342,7 @@ model RoomParticipant {
   @@unique([roomId, userId])
   @@index([roomId])
   @@index([userId])
+  @@index([lastActiveAt])
   @@map("room_participants")
 }
 
@@ -543,6 +568,139 @@ model JoinRequest {
   @@map("join_requests")
 }
 
+model PuzzleClueCache {
+  id          String    @id @default(cuid())
+  puzzleId    Int
+  fileHash    String    @db.VarChar(64)
+  version     Int       @default(1)
+  acrossClues String    @db.LongText
+  downClues   String    @db.LongText
+  metadata    String?   @db.LongText
+  sourceType  String    @default("iframe") @db.VarChar(20)
+  parseTimeMs Int?
+  isValid     Boolean   @default(true)
+  validatedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  puzzle      Puzzle    @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([puzzleId, fileHash])
+  @@index([puzzleId])
+  @@index([fileHash])
+  @@index([isValid])
+  @@index([createdAt])
+  @@map("puzzle_clue_cache")
+}
+
+model ClueCacheStats {
+  id             String   @id @default(cuid())
+  date           DateTime @unique @db.Date
+  cacheHits      Int      @default(0)
+  cacheMisses    Int      @default(0)
+  iframeParses   Int      @default(0)
+  avgParseTimeMs Decimal? @db.Decimal(10, 2)
+  totalRefreshes Int      @default(0)
+  errors         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([date])
+  @@map("clue_cache_stats")
+}
+
+model ClueParseLog {
+  id           String   @id @default(cuid())
+  puzzleId     Int
+  action       String   @db.VarChar(50)
+  source       String   @db.VarChar(20)
+  success      Boolean
+  durationMs   Int?
+  errorMessage String?  @db.Text
+  metadata     String?  @db.LongText
+  createdAt    DateTime @default(now())
+
+  @@index([puzzleId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([success])
+  @@map("clue_parse_log")
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model EmailLog {
+  id             String    @id @default(cuid())
+  messageId      String    @unique
+  recipient      String
+  subject        String
+  template       String
+  status         String
+  sentAt         DateTime  @default(now())
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  bouncedAt      DateTime?
+  bounceType     String?
+  bounceReason   String?   @db.Text
+  unsubscribedAt DateTime?
+  userAgent      String?   @db.Text
+  ipAddress      String?
+  
+  @@index([recipient])
+  @@index([status])
+  @@index([template])
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+model EmailEngagement {
+  id        String   @id @default(cuid())
+  messageId String
+  eventType String
+  timestamp DateTime @default(now())
+  url       String?  @db.Text
+  userAgent String?  @db.Text
+  ipAddress String?
+  details   Json?
+  
+  @@index([messageId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@map("email_engagements")
+}
+
+model EmailSecurityLog {
+  id        String   @id @default(cuid())
+  eventType String
+  recipient String
+  details   Json?
+  timestamp DateTime @default(now())
+  
+  @@index([recipient])
+  @@index([eventType])
+  @@index([timestamp])
+  @@map("email_security_logs")
+}
+
+model EmailVerification {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([email])
+  @@map("email_verifications")
+}
+
 enum RoomStatus {
   WAITING
   ACTIVE
@@ -585,4 +743,9 @@ enum LeaderboardScope {
   GLOBAL
   PUZZLE
   DIFFICULTY
+}
+
+enum HintType {
+  letter
+  word
 }

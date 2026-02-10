@@ -26,8 +26,6 @@ import {
   UserPlus,
   Shield,
   Bell,
-  Users,
-  UserPlus as UserPlusIcon,
   Gamepad2
 } from "lucide-react";
 
@@ -91,24 +89,6 @@ export function Header() {
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Puzzles
-          </Link>
-          <Link 
-            href="/multiplayer" 
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Multiplayer
-          </Link>
-          <Link 
-            href="/friends" 
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Friends
-          </Link>
-          <Link 
-            href="/pricing" 
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Pricing
           </Link>
         </nav>
 
@@ -237,27 +217,6 @@ export function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Puzzles
-              </Link>
-              <Link 
-                href="/multiplayer" 
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Multiplayer
-              </Link>
-              <Link 
-                href="/friends" 
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Friends
-              </Link>
-              <Link 
-                href="/pricing" 
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Pricing
               </Link>
             </nav>
             
@@ -515,4 +474,3 @@ function NotificationCenter() {
     </DropdownMenu>
   );
 }
-

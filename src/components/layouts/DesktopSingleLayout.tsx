@@ -21,8 +21,9 @@ export function DesktopSingleLayout({
   return (
     <div
       className={cn(
-        'grid h-full w-full gap-4 p-4',
+        'grid h-full w-full gap-4 p-6',
         'grid-cols-[3fr_7fr]',
+        'rounded-3xl bg-card/80 dark:bg-card/90 backdrop-blur-sm ring-1 ring-border shadow-lg',
         className
       )}
       style={{ gridTemplateColumns: '3fr 7fr' }}

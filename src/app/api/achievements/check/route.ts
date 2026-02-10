@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { checkAchievements, AchievementEvent } from "@/lib/achievements/checker";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { type, data } = body;
 
     // Validate event type
-    const validTypes = ['puzzle_completed', 'daily_activity', 'multiplayer_join', 'multiplayer_host'];
+    const validTypes = ['puzzle_completed', 'daily_activity'];
     if (!validTypes.includes(type)) {
       return NextResponse.json(
         { error: "Invalid event type" },

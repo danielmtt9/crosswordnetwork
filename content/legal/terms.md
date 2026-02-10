@@ -1,125 +1,101 @@
 # Terms of Service
 
-**Last updated: October 9, 2024**
+Last updated: February 9, 2026
 
-## 1. Acceptance of Terms
+These Terms of Service ("Terms") govern your access to and use of crossword.network (the "Service").
 
-By accessing and using crossword.network (the "Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+If you do not agree to these Terms, do not use the Service.
 
-## 2. Description of Service
+## 1. Who We Are
 
-crossword.network provides an online platform for crossword puzzle solving, including but not limited to:
+The Service is operated by **Maple-Tyne Technologies Inc.** ("Maple-Tyne", "we", "us", "our").
 
-- Access to a library of crossword puzzles
-- Multiplayer crossword sessions
-- User progress tracking and statistics
-- Community features and leaderboards
+## 2. The Service (What You Can Do Here)
 
-## 3. User Accounts
+crossword.network lets you:
 
-### 3.1 Account Creation
-- You must provide accurate and complete information when creating an account
-- You are responsible for maintaining the confidentiality of your account credentials
-- You must be at least 13 years old to create an account
+- browse and solve crossword puzzles
+- use solving tools like **Reveal Letter** and **Reveal Word**
+- save progress and continue later (including a list of in-progress puzzles)
 
-### 3.2 Account Security
-- You are responsible for all activities that occur under your account
-- You must notify us immediately of any unauthorized use of your account
-- We reserve the right to suspend or terminate accounts that violate these terms
+Some puzzles are rendered using a third-party puzzle format and are shown inside a sandboxed iframe so that we can support that format while integrating with crossword.network features like highlights and saving.
 
-## 4. Subscription and Payment
+## 3. Accounts and Access
 
-### 4.1 Free Tier
-- Basic access to limited puzzles
-- Standard hints and features
-- Community participation
+### Guest play
 
-### 4.2 Premium Subscription
-- Unlimited access to all puzzles
-- Advanced features and unlimited hints
-- Multiplayer room creation
-- Priority support
+You may be able to play as a guest. Guest progress is stored on your device/browser and may not carry across devices.
 
-### 4.3 Payment Terms
-- Subscription fees are billed in advance
-- All fees are non-refundable except as required by law
-- We may change subscription prices with 30 days notice
-- You can cancel your subscription at any time
+### Signed-in users
 
-## 5. User Conduct
+If you create an account or sign in, you are responsible for:
 
-### 5.1 Acceptable Use
-You agree to use the Service only for lawful purposes and in accordance with these Terms. You agree not to:
+- keeping your login credentials secure
+- activity that happens under your account
 
-- Violate any applicable laws or regulations
-- Infringe on the rights of others
-- Transmit harmful or malicious code
-- Attempt to gain unauthorized access to the Service
-- Use the Service for commercial purposes without permission
+We support authentication methods that may include:
 
-### 5.2 Prohibited Activities
-- Cheating or using automated tools to solve puzzles
-- Sharing account credentials with others
-- Creating multiple accounts to circumvent restrictions
-- Harassing or abusing other users
-- Posting inappropriate or offensive content
+- Google sign-in
+- email + password sign-in
 
-## 6. Intellectual Property
+### Admin access
 
-### 6.1 Our Content
-- The Service and its original content, features, and functionality are owned by crossword.network
-- All puzzles, unless otherwise specified, are proprietary content
-- You may not reproduce, distribute, or create derivative works without permission
+Certain features (such as uploading puzzles) are restricted to admin accounts.
 
-### 6.2 User Content
-- You retain ownership of content you create or upload
-- By using the Service, you grant us a license to use your content as necessary to provide the Service
-- You are responsible for ensuring you have rights to any content you share
+## 4. Saving, Continue, and Expiration
 
-## 7. Privacy
+The Service includes features to save and continue puzzle progress:
 
-Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, to understand our practices.
+- Autosave may run while you solve.
+- You may also see a **Save Now** action to force a save.
 
-## 8. Disclaimers and Limitations
+To keep the Continue list relevant, unfinished attempts may have an **expiration window** (for example, 7 days). After that, an unfinished attempt may no longer appear in Continue and may be reset.
 
-### 8.1 Service Availability
-- The Service is provided "as is" without warranties of any kind
-- We do not guarantee uninterrupted or error-free service
-- We may modify or discontinue features at any time
+## 5. Acceptable Use
 
-### 8.2 Limitation of Liability
-- To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, or consequential damages
-- Our total liability shall not exceed the amount you paid for the Service in the 12 months preceding the claim
+You agree not to:
 
-## 9. Termination
+- attack, probe, or reverse engineer the Service
+- interfere with normal operation (including automated scraping that harms performance)
+- upload or distribute malicious code
+- attempt to bypass access controls
+- use the Service in a way that violates applicable laws
 
-### 9.1 By You
-- You may terminate your account at any time
-- Cancellation takes effect at the end of your current billing period
+## 6. Puzzle Content and Intellectual Property
 
-### 9.2 By Us
-- We may suspend or terminate your account for violations of these Terms
-- We may discontinue the Service with reasonable notice
+### Our content
 
-## 10. Changes to Terms
+The Service, including our design, software, and branding, is owned by Maple-Tyne or its licensors and is protected by intellectual property laws.
 
-We reserve the right to modify these Terms at any time. We will notify users of material changes via email or through the Service. Continued use after changes constitutes acceptance of the new Terms.
+### Puzzle files
 
-## 11. Governing Law
+Puzzle files on crossword.network are provided for interactive solving. You may not copy, redistribute, publish, or sell puzzle files unless you have permission from the rights holder.
 
-These Terms shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to conflict of law principles.
+### Feedback
 
-## 12. Contact Information
+If you send us feedback (suggestions, bug reports, ideas), you grant us the right to use it to improve the Service without obligation to you.
 
-If you have any questions about these Terms, please contact us at:
+## 7. Third-Party Services
 
-- Email: legal@crossword.network
-- Address: [Company Address]
+We may use third-party providers to operate the Service (for example, authentication and email delivery). Your use of those services may be governed by their terms and policies.
 
-## 13. Severability
+## 8. Disclaimers
 
-If any provision of these Terms is found to be unenforceable, the remaining provisions will remain in full force and effect.
+The Service is provided "as is" and "as available". We do not guarantee that puzzles will always be available, that solving will be uninterrupted, or that the Service will always be error-free.
 
----
+## 9. Limitation of Liability
 
-*These Terms of Service are effective as of the date last updated and will remain in effect except with respect to any changes in their provisions in the future, which will be in effect immediately after being posted on this page.*
+To the fullest extent permitted by law, Maple-Tyne will not be liable for indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
+
+## 10. Termination
+
+We may suspend or terminate access to the Service if you violate these Terms or if we must do so to protect the Service, our users, or our providers.
+
+## 11. Governing Law (Canada)
+
+These Terms are governed by the laws of Canada, without regard to conflict of law principles. Any disputes will be handled in the courts of a competent jurisdiction in Canada.
+
+## 12. Contact
+
+Support: **support@crossword.network**
+

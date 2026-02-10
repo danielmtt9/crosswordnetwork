@@ -6,13 +6,23 @@ import { sendVerificationEmail } from "@/lib/email";
 import { generateUniqueUsername } from "@/lib/usernameGenerator";
 
 export async function POST(req: Request) {
-  try {
-    const { email, name, password } = await req.json();
-    if (!email || !password) return NextResponse.json({ message: "Email and password required" }, { status: 400 });
-    const lower = String(email).toLowerCase();
+    try {
+        const { email, name, password } = await req.json();
+        if (!email || !password)
+            return NextResponse.json(
+                { message: "Email and password required" },
+                { status: 400 },
+            );
+        const lower = String(email).toLowerCase();
 
-    const existing = await prisma.user.findUnique({ where: { email: lower } });
-    if (existing) return NextResponse.json({ message: "Email already registered" }, { status: 400 });
+        const existing = await prisma.user.findUnique({
+            where: { email: lower },
+        });
+        if (existing)
+            return NextResponse.json(
+                { message: "Email already registered" },
+                { status: 400 },
+            );
 
     const hash = await bcrypt.hash(password, 12);
     const username = await generateUniqueUsername();
@@ -32,12 +42,10 @@ export async function POST(req: Request) {
     const url = new URL("/api/auth/verify", process.env.NEXTAUTH_URL || "http://localhost:3000");
     url.searchParams.set("token", token);
     url.searchParams.set("email", lower);
-    await sendVerificationEmail({ to: lower, verifyUrl: url.toString() });
+    await sendVerificationEmail(lower, url.toString(), name || 'User');
 
     return NextResponse.json({ message: "Verification email sent" });
   } catch (e) {
     return NextResponse.json({ message: "Signup failed" }, { status: 500 });
   }
 }
-
-

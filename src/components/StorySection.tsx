@@ -3,18 +3,18 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Users, 
-  Share2, 
-  Puzzle, 
-  Smartphone, 
-  Laptop, 
-  Trophy, 
+import {
+  Puzzle,
+  Smartphone,
+  Laptop,
+  Trophy,
   Flame,
   ArrowRight,
   Heart,
   Coffee,
-  Sparkles
+  Sparkles,
+  Target,
+  Calendar
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,35 +25,35 @@ interface StorySectionProps {
 export default function StorySection({ className = "" }: StorySectionProps) {
   const stories = [
     {
-      id: "play-together",
-      title: "Play Together",
-      subtitle: "The magic happens when friends gather",
-      icon: Users,
+      id: "pick-a-puzzle",
+      title: "Pick a Puzzle",
+      subtitle: "Settle in and solve on your schedule",
+      icon: Puzzle,
       color: "from-amber-500 to-orange-500",
       bgColor: "from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20",
       steps: [
         {
-          icon: Users,
-          title: "Start a room",
-          description: "Create your cozy crossword space in seconds",
-          action: "Host"
+          icon: Calendar,
+          title: "Daily picks",
+          description: "Fresh puzzles and timeless classics",
+          action: "Daily"
         },
         {
-          icon: Share2,
-          title: "Invite friends",
-          description: "Share the 6-letter code or send a link",
-          action: "Share"
+          icon: Target,
+          title: "Choose your challenge",
+          description: "Easy, medium, or hard — your call",
+          action: "Level"
         },
         {
           icon: Puzzle,
-          title: "Solve together",
-          description: "Watch letters appear in real-time as everyone contributes",
-          action: "Collaborate"
+          title: "Focus & flow",
+          description: "A calm, distraction-free solving space",
+          action: "Solve"
         }
       ],
       cta: {
-        text: "Start your first room",
-        href: "/multiplayer/new",
+        text: "Browse puzzles",
+        href: "/puzzles",
         icon: ArrowRight
       },
       decorative: <Heart className="h-6 w-6 text-amber-500" />
@@ -113,9 +113,9 @@ export default function StorySection({ className = "" }: StorySectionProps) {
           action: "Achieve"
         },
         {
-          icon: Users,
+          icon: Trophy,
           title: "Climb leaderboards",
-          description: "See how you stack up against friends",
+          description: "See how you stack up across puzzles",
           action: "Compete"
         }
       ],
@@ -142,7 +142,7 @@ export default function StorySection({ className = "" }: StorySectionProps) {
             Three cozy ways to enjoy puzzles
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Whether you're solving solo or with friends, every moment is designed to feel warm and inviting.
+            Everything is designed for solo solving — warm, focused, and unhurried.
           </p>
         </motion.div>
 

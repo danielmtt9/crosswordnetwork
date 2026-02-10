@@ -3,16 +3,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Flame, Calendar, Target, Zap, Shield } from "lucide-react";
+import { Flame, Calendar, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StreakData {
   currentStreak: number;
   longestStreak: number;
   lastPlayedDate?: string;
-  streakFreezeUsed: boolean;
-  streakFreezeAvailable: boolean;
   nextMilestone: number;
   daysUntilMilestone: number;
 }
@@ -60,19 +57,6 @@ export function StreakDisplay({ userId, className, compact = false }: StreakDisp
     }
   };
 
-  const useStreakFreeze = async () => {
-    try {
-      const response = await fetch('/api/user/streak-freeze', {
-        method: 'POST',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to use streak freeze');
-      }
-      await fetchStreakData(); // Refresh data
-    } catch (err) {
-      console.error('Error using streak freeze:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -215,28 +199,6 @@ export function StreakDisplay({ userId, className, compact = false }: StreakDisp
                 }}
               />
             </div>
-          </div>
-        )}
-
-        {/* Streak Freeze */}
-        {streakData.streakFreezeAvailable && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-purple-500" />
-              <span className="text-sm font-medium">Streak Freeze Available</span>
-            </div>
-            <Button 
-              onClick={useStreakFreeze}
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
-              <Zap className="h-4 w-4 mr-2" />
-              Use Streak Freeze
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Protect your streak from being broken (Premium feature)
-            </p>
           </div>
         )}
 

@@ -17,7 +17,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              Premium crossword puzzles with multiplayer collaboration and progress tracking.
+              Cozy crossword puzzles with progress tracking and a focused solving experience.
             </p>
           </div>
 
@@ -31,22 +31,6 @@ export function Footer() {
                   className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Puzzles
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/multiplayer" 
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Multiplayer
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/pricing" 
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Pricing
                 </Link>
               </li>
             </ul>
@@ -129,4 +113,3 @@ export function Footer() {
     </footer>
   );
 }
-

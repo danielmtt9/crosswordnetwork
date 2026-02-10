@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -60,38 +60,6 @@ export async function GET(request: NextRequest) {
         userEarnedAchievements.includes(req.achievementId)
       );
     });
-
-    // Get premium features
-    const premiumFeatures = [
-      {
-        id: 'premium_theme',
-        name: 'Premium Theme',
-        description: 'Unlock exclusive dark and light themes',
-        unlocked: false,
-        requiredPoints: 1000
-      },
-      {
-        id: 'advanced_stats',
-        name: 'Advanced Statistics',
-        description: 'Detailed analytics and progress tracking',
-        unlocked: false,
-        requiredPoints: 2000
-      },
-      {
-        id: 'priority_support',
-        name: 'Priority Support',
-        description: 'Get faster response times for support requests',
-        unlocked: false,
-        requiredPoints: 5000
-      },
-      {
-        id: 'exclusive_puzzles',
-        name: 'Exclusive Puzzles',
-        description: 'Access to premium puzzle collections',
-        unlocked: false,
-        requiredPoints: 10000
-      }
-    ];
 
     // Get hint bonuses
     const hintBonuses = [
@@ -191,7 +159,6 @@ export async function GET(request: NextRequest) {
           pointsRequired: req.achievement.points
         }))
       })),
-      premiumFeatures,
       hintBonuses,
       specialEvents
     });

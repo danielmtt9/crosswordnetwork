@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -84,9 +84,9 @@ export async function GET(request: NextRequest) {
         target: 50,
         current: achievementCount,
         reward: {
-          type: 'premium_feature' as const,
+          type: 'badge' as const,
           value: 2500,
-          name: 'Premium Theme Unlock'
+          name: 'Achievement Master Badge'
         },
         unlocked: achievementCount >= 50,
         rarity: 'epic' as const
@@ -134,9 +134,9 @@ export async function GET(request: NextRequest) {
         target: 5000,
         current: totalPoints,
         reward: {
-          type: 'premium_feature' as const,
+          type: 'badge' as const,
           value: 1,
-          name: 'Advanced Statistics'
+          name: 'Point Accumulator Badge'
         },
         unlocked: totalPoints >= 5000,
         rarity: 'rare' as const
@@ -166,9 +166,9 @@ export async function GET(request: NextRequest) {
         target: 25000,
         current: totalPoints,
         reward: {
-          type: 'premium_feature' as const,
+          type: 'badge' as const,
           value: 1,
-          name: 'Unlimited Hints'
+          name: 'Point Legend Badge'
         },
         unlocked: totalPoints >= 25000,
         rarity: 'legendary' as const
@@ -266,9 +266,9 @@ export async function GET(request: NextRequest) {
         target: 500,
         current: puzzlesCompleted,
         reward: {
-          type: 'premium_feature' as const,
+          type: 'badge' as const,
           value: 1,
-          name: 'Exclusive Puzzle Access'
+          name: 'Puzzle Master Badge'
         },
         unlocked: puzzlesCompleted >= 500,
         rarity: 'epic' as const

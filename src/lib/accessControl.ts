@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
+import { getAuthSession } from './auth';
 import { hasAdminAccess } from './admin';
 
 export async function requireAdminAccess(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -35,7 +34,7 @@ export async function requireAdminAccess(request: NextRequest) {
 
 export async function requireAuth(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     if (!session?.user?.id) {
       return NextResponse.json(

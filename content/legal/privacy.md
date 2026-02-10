@@ -1,169 +1,102 @@
 # Privacy Policy
 
-**Last updated: October 9, 2024**
+Last updated: February 9, 2026
 
-## 1. Introduction
+This Privacy Policy explains how **Maple-Tyne Technologies Inc.** ("Maple-Tyne", "we", "us") collects, uses, and shares information when you use crossword.network (the "Service").
 
-crossword.network ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our crossword puzzle platform and services.
+We wrote this policy for crossword.network specifically. If something in here does not match what you see in the product, please tell us so we can correct it.
 
-## 2. Information We Collect
+## 1. What We Collect
 
-### 2.1 Information You Provide
-- **Account Information**: Name, email address, password (hashed)
-- **Profile Information**: Avatar, display preferences
-- **Payment Information**: Billing address, payment method (processed by third-party payment processors)
-- **Communications**: Messages you send to us, feedback, support requests
+### Account information (if you sign in)
 
-### 2.2 Information We Collect Automatically
-- **Usage Data**: Puzzles played, time spent, progress, achievements
-- **Device Information**: IP address, browser type, operating system, device identifiers
-- **Log Data**: Access times, pages viewed, features used, error logs
-- **Cookies and Tracking**: Session cookies, preference cookies, analytics cookies
+When you create an account or sign in, we may collect:
 
-### 2.3 Information from Third Parties
-- **Social Media**: Information from Google OAuth (name, email, profile picture)
-- **Payment Processors**: Transaction confirmations and billing information
-- **Analytics Services**: Aggregated usage statistics and performance metrics
+- email address
+- name (if provided by you or your sign-in provider)
+- authentication identifiers needed to keep you signed in
 
-## 3. How We Use Your Information
+### Puzzle and gameplay data
 
-### 3.1 Service Provision
-- Provide and maintain the crossword puzzle platform
-- Process transactions and manage subscriptions
-- Enable multiplayer features and social interactions
-- Track progress and provide personalized experiences
+To provide the Service features you use, we may store:
 
-### 3.2 Communication
-- Send service-related notifications and updates
-- Respond to your inquiries and provide customer support
-- Send marketing communications (with your consent)
-- Notify you of important changes to our service
+- your puzzle progress (cells you filled, timestamps, and save history)
+- hints used (for example, Reveal Letter / Reveal Word usage)
+- hint usage events (hint type + timestamp) used to enforce hint limits and prevent abuse
+- whether a puzzle is completed and completion time stats
 
-### 3.3 Improvement and Analytics
-- Analyze usage patterns to improve our service
-- Develop new features and content
-- Conduct research and analytics
-- Ensure security and prevent fraud
+### Support messages
 
-### 3.4 Legal Compliance
-- Comply with applicable laws and regulations
-- Respond to legal requests and court orders
-- Protect our rights and interests
-- Enforce our Terms of Service
+If you contact us, we collect the information you send (your email, subject, message, and any details you provide like puzzle IDs).
 
-## 4. Information Sharing and Disclosure
+### Technical data
 
-### 4.1 We Do Not Sell Personal Information
-We do not sell, trade, or rent your personal information to third parties.
+Like most web services, we may collect basic technical data in server logs, such as:
 
-### 4.2 Service Providers
-We may share information with trusted third-party service providers who assist us in:
-- Payment processing (Stripe)
-- Email services (Resend)
-- Analytics and monitoring
-- Cloud hosting and infrastructure
+- IP address (or approximate location derived from it)
+- device/browser information (user-agent)
+- timestamps and error logs needed to keep the Service reliable
 
-### 4.3 Legal Requirements
-We may disclose information when required by law or to:
-- Comply with legal processes
-- Protect our rights and property
-- Ensure user safety
-- Prevent fraud or abuse
+## 2. How We Use Information
 
-### 4.4 Business Transfers
-In the event of a merger, acquisition, or sale of assets, user information may be transferred as part of the transaction.
+We use information to:
 
-## 5. Data Security
+- provide the core solving experience (loading puzzles, highlighting, hints)
+- save and restore your progress and show your Continue list
+- keep your account secure and prevent abuse
+- respond to support requests and troubleshoot issues
+- improve performance and reliability
 
-### 5.1 Security Measures
-- Encryption of data in transit and at rest
-- Regular security audits and updates
-- Access controls and authentication
-- Secure payment processing
+We do **not** use your information for marketing emails by default.
 
-### 5.2 Data Breach Response
-In the event of a data breach, we will:
-- Notify affected users within 72 hours
-- Report to relevant authorities as required
-- Take immediate steps to secure the system
-- Provide guidance on protective measures
+## 3. Cookies and Similar Technologies
 
-## 6. Your Rights and Choices
+We use cookies for two purposes:
 
-### 6.1 Access and Control
-- View and update your account information
-- Download your data
-- Delete your account
-- Opt out of marketing communications
+- **Necessary cookies**: to keep you signed in and protect your session
+- **Preference cookies** (optional): to remember settings like theme and solver preferences
 
-### 6.2 Data Portability
-You can request a copy of your personal data in a structured, machine-readable format.
+See the Cookie Policy for details: `/cookies`.
 
-### 6.3 Right to Deletion
-You can request deletion of your personal information, subject to certain exceptions for legal and operational requirements.
+## 4. When We Share Information
 
-### 6.4 Cookie Preferences
-You can manage cookie preferences through your browser settings or our cookie consent tool.
+We share information only as needed to operate the Service, including with:
 
-## 7. Children's Privacy
+- **Authentication providers** (for example, Google sign-in)
+- **Email delivery providers** (for example, to send verification/reset emails and to route support messages)
+- **Infrastructure providers** (hosting, databases, and monitoring), as required to run the Service
 
-Our service is not intended for children under 13. We do not knowingly collect personal information from children under 13. If we become aware that we have collected such information, we will take steps to delete it promptly.
+We do not sell your personal information.
 
-## 8. International Data Transfers
+## 5. Data Retention
 
-Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information in accordance with this Privacy Policy.
+We keep data for as long as needed to operate the Service.
 
-## 9. Data Retention
+Examples:
 
-We retain your information for as long as necessary to:
-- Provide our services
-- Comply with legal obligations
-- Resolve disputes
-- Enforce our agreements
+- Account data is retained while your account remains active.
+- Puzzle progress is retained so you can continue solving. Unfinished attempts may expire after a period (for example, 7 days) to keep the Continue list relevant.
+- Support messages may be retained to help us resolve issues and improve support quality.
 
-Account information is typically retained until you delete your account or request deletion.
+## 6. Your Choices and Rights (Canada)
 
-## 10. Third-Party Services
+Depending on your location and applicable Canadian privacy laws, you may have rights to:
 
-Our service may contain links to third-party websites or integrate with third-party services. This Privacy Policy does not apply to those services. We encourage you to review their privacy policies.
+- request access to personal information we have about you
+- request correction of inaccurate information
+- request deletion of your account information, subject to legal and operational requirements
 
-## 11. California Privacy Rights
+To make a privacy request, email: **privacy@crossword.network**
 
-If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
-- Right to know what personal information is collected
-- Right to delete personal information
-- Right to opt-out of the sale of personal information
-- Right to non-discrimination
+## 7. Security
 
-## 12. European Union (GDPR) Rights
+We use reasonable safeguards to protect information. No method of transmission or storage is perfectly secure, so we cannot guarantee absolute security.
 
-If you are in the European Union, you have rights under the General Data Protection Regulation (GDPR):
-- Right of access
-- Right to rectification
-- Right to erasure
-- Right to restrict processing
-- Right to data portability
-- Right to object
+## 8. Changes to This Policy
 
-## 13. Changes to This Privacy Policy
+We may update this policy from time to time. We will update the "Last updated" date at the top when we do.
 
-We may update this Privacy Policy from time to time. We will notify you of any material changes by:
-- Posting the new Privacy Policy on this page
-- Sending you an email notification
-- Providing notice through our service
+## 9. Contact
 
-## 14. Contact Us
-
-If you have any questions about this Privacy Policy or our privacy practices, please contact us at:
-
-- **Email**: privacy@crossword.network
-- **Address**: [Company Address]
-- **Data Protection Officer**: dpo@crossword.network
-
-## 15. Effective Date
-
-This Privacy Policy is effective as of the date last updated and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.
-
----
-
-*We are committed to protecting your privacy and being transparent about our data practices. If you have any concerns or questions, please don't hesitate to contact us.*
+Privacy requests: **privacy@crossword.network**  
+Support: **support@crossword.network**

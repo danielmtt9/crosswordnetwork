@@ -187,11 +187,11 @@ function EclipseCrosswordComponent({
         puzzleId: puzzleId
       }, '*');
       
-      // Enable multiplayer mode if specified
+      // Enable optional cell update callbacks if specified
       if (isMultiplayer && iframeRef.current.contentWindow.__enableMultiplayer) {
-        console.log('[EclipseCrossword] Enabling multiplayer mode with callback');
+        console.log('[EclipseCrossword] Enabling cell update callback');
         iframeRef.current.contentWindow.__enableMultiplayer((cellData: any) => {
-          console.log('[EclipseCrossword] Multiplayer callback received:', cellData);
+          console.log('[EclipseCrossword] Callback received:', cellData);
           // Call the onCellUpdate callback
           if (onCellUpdate) {
             console.log('[EclipseCrossword] Calling onCellUpdate with:', cellData);

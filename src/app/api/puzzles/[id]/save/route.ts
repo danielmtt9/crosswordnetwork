@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function POST(
   request: NextRequest,
@@ -18,7 +20,7 @@ export async function POST(
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -52,6 +54,7 @@ export async function POST(
     }
 
     const now = new Date();
+    const cutoff = new Date(now.getTime() - SEVEN_DAYS_MS);
 
     // Get existing progress to check for conflicts
     const existingProgress = await prisma.userProgress.findFirst({
@@ -63,8 +66,17 @@ export async function POST(
         id: true,
         lastAutoSave: true,
         saveHistory: true,
+        startedAt: true,
+        isCompleted: true,
       },
     });
+
+    // If progress has expired (unfinished), reset it on the next save.
+    const hasExpired =
+      !!existingProgress &&
+      !existingProgress.isCompleted &&
+      !!existingProgress.startedAt &&
+      existingProgress.startedAt < cutoff;
 
     // Conflict detection: check if server has newer data
     if (existingProgress?.lastAutoSave && timestamp) {
@@ -116,6 +128,7 @@ export async function POST(
         autoSaveCount: { increment: 1 },
         saveHistory: JSON.stringify(saveHistory),
         completionTimeSeconds: timeElapsed || null,
+        ...(hasExpired ? { startedAt: now } : {}),
       },
       create: {
         userId: userId,
@@ -170,7 +183,7 @@ export async function PATCH(
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session) {
       return NextResponse.json(
         { error: "Unauthorized" },

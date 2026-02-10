@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/superAdmin";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -84,51 +84,6 @@ export async function POST(request: NextRequest) {
                 actorUserId: session.userId,
                 details: {
                   newRole: data.role,
-                  userName: updatedUser.name,
-                  userEmail: updatedUser.email,
-                  bulkOperation: true
-                }
-              }
-            });
-
-            results.push({ userId, success: true, data: updatedUser });
-          } catch (error) {
-            errors.push({ userId, error: error instanceof Error ? error.message : 'Unknown error' });
-          }
-        }
-        break;
-
-      case 'updateSubscriptionStatus':
-        if (!data?.subscriptionStatus) {
-          return NextResponse.json(
-            { error: "Subscription status is required for updateSubscriptionStatus action" },
-            { status: 400 }
-          );
-        }
-
-        for (const userId of userIds) {
-          try {
-            const updateData: any = { subscriptionStatus: data.subscriptionStatus };
-            if (data.trialEndsAt) {
-              updateData.trialEndsAt = new Date(data.trialEndsAt);
-            }
-
-            const updatedUser = await prisma.user.update({
-              where: { id: userId },
-              data: updateData,
-              select: { id: true, name: true, email: true, subscriptionStatus: true, trialEndsAt: true }
-            });
-
-            // Log the bulk subscription change
-            await prisma.auditLog.create({
-              data: {
-                action: 'BULK_SUBSCRIPTION_CHANGED',
-                entityType: 'USER',
-                entityId: userId,
-                actorUserId: session.userId,
-                details: {
-                  newStatus: data.subscriptionStatus,
-                  trialEndsAt: data.trialEndsAt,
                   userName: updatedUser.name,
                   userEmail: updatedUser.email,
                   bulkOperation: true

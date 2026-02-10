@@ -17,7 +17,6 @@ import {
   Calendar,
   Target,
   Zap,
-  Crown,
   ArrowRight,
   Edit,
   Share2
@@ -58,8 +57,6 @@ export default function DashboardPage() {
       id: string;
       name: string | null;
       email: string | null;
-      role: string;
-      subscriptionStatus: string;
       joinDate: string;
       avatar: string | null;
     } | null;
@@ -112,9 +109,6 @@ export default function DashboardPage() {
   const user = apiData.user ? {
     name: apiData.user.name || session?.user?.name || "User",
     email: apiData.user.email || session?.user?.email || "",
-    role: apiData.user.role || (session as any)?.role || "FREE",
-    subscriptionStatus: apiData.user.subscriptionStatus || (session as any)?.subscriptionStatus || "TRIAL",
-    trialEndsAt: (session as any)?.trialEndsAt || null,
     joinDate: apiData.user.joinDate,
     avatar: apiData.user.avatar || session?.user?.image || null,
     stats: apiData.stats || {
@@ -131,9 +125,6 @@ export default function DashboardPage() {
   } : (session ? {
     name: session.user?.name || "User",
     email: session.user?.email || "",
-    role: (session as any)?.role || "FREE",
-    subscriptionStatus: (session as any)?.subscriptionStatus || "TRIAL",
-    trialEndsAt: (session as any)?.trialEndsAt || null,
     joinDate: new Date().toISOString(),
     avatar: session.user?.image || null,
     stats: {
@@ -150,9 +141,6 @@ export default function DashboardPage() {
   } : {
     name: "User",
     email: "",
-    role: "FREE",
-    subscriptionStatus: "TRIAL",
-    trialEndsAt: null,
     joinDate: new Date().toISOString(),
     avatar: null,
     stats: {
@@ -177,7 +165,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-background to-orange-50/30 dark:from-amber-950/10 dark:via-background dark:to-orange-950/10">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-xl">
         <div className="container mx-auto max-w-7xl px-4 py-6">
@@ -192,15 +180,6 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className={user.role === "PREMIUM" ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"}>
-                <Crown className="mr-1 h-3 w-3" />
-                {user.role === "PREMIUM" ? "Premium" : "Free"}
-              </Badge>
-              {user.subscriptionStatus === "TRIAL" && user.trialEndsAt && (
-                <Badge variant="outline" className="text-xs">
-                  Trial ends {new Date(user.trialEndsAt).toLocaleDateString()}
-                </Badge>
-              )}
               <Button variant="outline" size="sm" asChild>
                 <Link href="/settings">
                   <Settings className="h-4 w-4 mr-2" />
@@ -436,39 +415,6 @@ export default function DashboardPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button asChild className="w-full">
-                    <Link href="/puzzles">
-                      <Puzzle className="mr-2 h-4 w-4" />
-                      Browse Puzzles
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/multiplayer/new">
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Start Room
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/multiplayer/join">
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      Join Room
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-
             {/* Progress Goals */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -501,38 +447,6 @@ export default function DashboardPage() {
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '40%' }} />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Subscription Info */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Crown className="h-5 w-5" />
-                    Premium Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center">
-                    <Badge className="bg-primary text-primary-foreground mb-2">
-                      Active
-                    </Badge>
-                    <p className="text-sm text-muted-foreground">
-                      Next billing: Feb 15, 2024
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Manage Subscription
-                    </Link>
-                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

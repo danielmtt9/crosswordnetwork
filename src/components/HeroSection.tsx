@@ -1,65 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { 
   Puzzle, 
-  Users, 
   ArrowRight,
   Sparkles,
   Coffee,
   Heart,
-  Home
+  Play
 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
-interface HeroSectionProps {
-  liveRoomsCount?: number;
-  onlineUsersCount?: number;
-}
-
-export default function HeroSection({ 
-  liveRoomsCount = 12, 
-  onlineUsersCount = 47 
-}: HeroSectionProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
-  const [roomCode, setRoomCode] = useState("");
-  const [isJoining, setIsJoining] = useState(false);
-
-  const handleStartRoom = () => {
-    if (session) {
-      router.push("/multiplayer/new");
-    } else {
-      router.push("/signup?redirect=/multiplayer/new");
-    }
-  };
-
-  const handleJoinRoom = async () => {
-    if (!roomCode.trim()) return;
-    
-    // Validate room code format (6 characters)
-    if (roomCode.length !== 6) {
-      alert("Room code must be 6 characters long");
-      return;
-    }
-    
-    setIsJoining(true);
-    try {
-      // Check if room exists and redirect
-      router.push(`/multiplayer/join/${roomCode.toUpperCase()}`);
-    } catch (error) {
-      alert("Room not found. Please check the code and try again.");
-    } finally {
-      setIsJoining(false);
-    }
-  };
-
+export default function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-red-950/20">
       {/* Cozy background elements */}
@@ -81,69 +35,44 @@ export default function HeroSection({
             <div className="space-y-6">
               <Badge variant="secondary" className="w-fit bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-800">
                 <Coffee className="mr-2 h-4 w-4" />
-                Cozy crossword nights
+                Cozy crossword moments
               </Badge>
               
               <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                Crossword nights,{" "}
+                Relax and solve,{" "}
                 <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                  together
+                  unwind
                 </span>
               </h1>
               
               <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
-                Gather your friends for the coziest crossword solving experience. 
-                Share laughs, celebrate victories, and create memories one puzzle at a time.
+                Enjoy a curated collection of crossword puzzles designed for your relaxation.
+                Track your progress, earn achievements, and solve at your own pace.
               </p>
             </div>
 
-            {/* Room Creation and Joining */}
+            {/* Play Now CTA */}
             <div className="space-y-6">
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button 
                   size="lg" 
-                  onClick={handleStartRoom}
+                  asChild
                   className="text-lg px-8 py-6 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                  <Home className="mr-2 h-5 w-5" />
-                  Start a room
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link href="/puzzles">
+                    <Play className="mr-2 h-5 w-5" />
+                    Play Now
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">Or join a friend's room</p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter 6-letter code"
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    maxLength={6}
-                    className="flex-1 text-center font-mono text-lg tracking-wider"
-                    onKeyDown={(e) => e.key === 'Enter' && handleJoinRoom()}
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    onClick={handleJoinRoom}
-                    disabled={isJoining || roomCode.length !== 6}
-                    className="px-6"
-                  >
-                    Join
-                  </Button>
-                </div>
               </div>
             </div>
 
             {/* Social proof */}
             <div className="flex items-center space-x-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Heart className="h-4 w-4 text-red-500" />
-                <span>1-week free trial</span>
-              </div>
-              <div className="flex items-center space-x-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                <span>No credit card required</span>
+                <span>Pure puzzles, no distractions</span>
               </div>
             </div>
           </motion.div>
@@ -159,16 +88,7 @@ export default function HeroSection({
               {/* Room header */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-muted-foreground">Room ABC123</span>
-                </div>
-                <div className="flex -space-x-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 ring-2 ring-white dark:ring-gray-900"
-                    />
-                  ))}
+                  <span className="text-sm font-medium text-muted-foreground">Daily Puzzle</span>
                 </div>
               </div>
 
@@ -186,18 +106,6 @@ export default function HeroSection({
                      i === 6 || i === 8 || i === 16 || i === 18 ? String.fromCharCode(65 + (i % 26)) : ''}
                   </motion.div>
                 ))}
-              </div>
-
-              {/* Live activity indicator */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-3 w-3" />
-                  <span>4 solving together</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Live</span>
-                </div>
               </div>
 
               {/* Cozy vibes indicator */}

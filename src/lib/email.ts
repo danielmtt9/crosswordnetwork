@@ -1,10 +1,12 @@
 import { Resend } from 'resend';
-import { EmailTemplate } from './emailTemplates';
+import { EmailTemplate, emailTemplateManager } from './emailTemplates';
 import { EmailAnalytics } from './emailAnalytics';
 import { EmailSecurity } from './emailSecurity';
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY);
+const DEFAULT_FROM_ADDRESS =
+  process.env.EMAIL_FROM?.trim() || 'Crossword Network <noreply@crossword.network>';
 
 export interface EmailOptions {
   to: string | string[];
@@ -13,6 +15,12 @@ export interface EmailOptions {
   data?: Record<string, any>;
   priority?: 'high' | 'normal' | 'low';
   tags?: Record<string, string>;
+  from?: string;
+  /**
+   * Optional key used for rate limiting. Useful when many user messages go to a shared inbox
+   * (e.g. Contact Us -> support@...), where limiting by recipient would block all users.
+   */
+  rateLimitKey?: string;
 }
 
 export interface EmailResult {
@@ -49,7 +57,7 @@ export class EmailService {
       }
 
       // Rate limiting check
-      const rateLimitCheck = await this.security.checkRateLimit(options.to);
+      const rateLimitCheck = await this.security.checkRateLimit(options.rateLimitKey || options.to);
       if (!rateLimitCheck.allowed) {
         return {
           success: false,
@@ -62,9 +70,12 @@ export class EmailService {
       const emailContent = await this.generateEmailContent(options);
 
       // Send email with retry logic
+      const fromAddress = options.from?.trim() || DEFAULT_FROM_ADDRESS;
+
       const result = await this.sendWithRetry({
         to: options.to,
         subject: options.subject,
+        from: fromAddress,
         html: emailContent.html,
         text: emailContent.text,
         tags: options.tags || {}
@@ -94,7 +105,14 @@ export class EmailService {
   /**
    * Send email with exponential backoff retry
    */
-  private async sendWithRetry(emailData: any): Promise<EmailResult> {
+  private async sendWithRetry(emailData: {
+    to: string | string[];
+    from: string;
+    subject: string;
+    html: string;
+    text: string;
+    tags?: Record<string, string>;
+  }): Promise<EmailResult> {
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
@@ -162,6 +180,70 @@ export class EmailService {
   }
 
   /**
+   * Send verification email
+   */
+  async sendVerificationEmail(email: string, verificationUrl: string, userName: string): Promise<boolean> {
+    try {
+      const template = emailTemplateManager.getTemplate('verify-email');
+      if (!template) {
+        throw new Error('Verification email template not found');
+      }
+
+      const result = await this.sendEmail({
+        to: email,
+        subject: 'Verify your email address - Crossword Network',
+        template,
+        data: {
+          verificationUrl,
+          userName,
+          expiresIn: '24 hours'
+        },
+        priority: 'high',
+        tags: {
+          type: 'verification'
+        }
+      });
+
+      return result.success;
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(email: string, resetUrl: string, userName: string): Promise<boolean> {
+    try {
+      const template = emailTemplateManager.getTemplate('reset-password');
+      if (!template) {
+        throw new Error('Password reset template not found');
+      }
+
+      const result = await this.sendEmail({
+        to: email,
+        subject: 'Reset your password - Crossword Network',
+        template,
+        data: {
+          resetUrl,
+          userName,
+          expiresIn: '1 hour'
+        },
+        priority: 'high',
+        tags: {
+          type: 'password-reset'
+        }
+      });
+
+      return result.success;
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get email service health status
    */
   async getHealthStatus(): Promise<{
@@ -172,8 +254,10 @@ export class EmailService {
       // Test API connectivity
       const testResponse = await resend.emails.send({
         to: 'test@example.com',
+        from: DEFAULT_FROM_ADDRESS,
         subject: 'Health Check',
-        html: '<p>Health check</p>'
+        html: '<p>Health check</p>',
+        text: 'Health check'
       });
 
       return {

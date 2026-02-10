@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseCluesFromStorage } from "@/lib/serverClueExtraction";
 
 export async function GET(
   request: NextRequest,
@@ -7,11 +8,20 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const puzzleId = parseInt(id);
+    const puzzleId = parseInt(id, 10);
     
-    if (isNaN(puzzleId)) {
+    // Validate puzzle ID: must be a positive integer
+    if (isNaN(puzzleId) || puzzleId <= 0 || !Number.isInteger(puzzleId)) {
       return NextResponse.json(
-        { error: "Invalid puzzle ID" },
+        { error: "Invalid puzzle ID: must be a positive integer" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate reasonable upper bound (prevent DoS)
+    if (puzzleId > Number.MAX_SAFE_INTEGER) {
+      return NextResponse.json(
+        { error: "Invalid puzzle ID: value too large" },
         { status: 400 }
       );
     }
@@ -26,7 +36,6 @@ export async function GET(
         title: true,
         description: true,
         difficulty: true,
-        tier: true,
         category: true,
         tags: true,
         play_count: true,
@@ -39,6 +48,7 @@ export async function GET(
         upload_date: true,
         file_path: true,
         filename: true,
+        clues: true,
       },
     });
 
@@ -49,18 +59,41 @@ export async function GET(
       );
     }
 
-    // Convert Decimal types to numbers
+    // Convert Decimal types to numbers and parse clues
     const normalizedPuzzle = {
       ...puzzle,
       completion_rate: puzzle.completion_rate ? Number(puzzle.completion_rate) : null,
       avg_solve_time: puzzle.avg_solve_time ? Number(puzzle.avg_solve_time) : null,
+      clues: puzzle.clues ? parseCluesFromStorage(puzzle.clues) : { across: [], down: [] },
     };
 
     return NextResponse.json(normalizedPuzzle);
   } catch (error) {
-    console.error("Error fetching puzzle:", error);
+    // Type-safe error logging with proper error handling
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    // Get puzzle ID safely for logging
+    let puzzleIdForLog = 'unknown';
+    try {
+      const resolvedParams = await params;
+      puzzleIdForLog = resolvedParams.id;
+    } catch {
+      // params already resolved or failed
+    }
+    
+    console.error("Error fetching puzzle:", {
+      error: errorMessage,
+      stack: errorStack,
+      puzzleId: puzzleIdForLog
+    });
+    
+    // Return generic error to client, but log details server-side
     return NextResponse.json(
-      { error: "Failed to fetch puzzle" },
+      { 
+        error: "Failed to fetch puzzle",
+        errorId: `puzzle-${Date.now()}` // Error ID for tracking
+      },
       { status: 500 }
     );
   }

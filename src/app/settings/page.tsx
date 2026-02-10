@@ -13,24 +13,16 @@ import {
   User, 
   Bell, 
   Shield, 
-  CreditCard, 
   Palette,
   Save,
   Eye,
-  EyeOff,
-  Crown,
-  CheckCircle,
-  AlertTriangle
+  EyeOff
 } from "lucide-react";
 
 // Mock user data
 const mockUser = {
   name: "Alex Johnson",
   email: "alex@example.com",
-  role: "PREMIUM",
-  subscriptionStatus: "ACTIVE",
-  subscriptionPlan: "monthly",
-  nextBillingDate: "2024-02-15",
   joinDate: "2024-01-15",
   preferences: {
     theme: "system",
@@ -42,7 +34,7 @@ const mockUser = {
     privacy: {
       profileVisibility: "public",
       showOnlineStatus: true,
-      allowFriendRequests: true
+      allowFriendRequests: false
     },
     gameplay: {
       soundEnabled: true,
@@ -70,7 +62,6 @@ export default function SettingsPage() {
     { id: "profile", label: "Profile", icon: User },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "privacy", label: "Privacy", icon: Shield },
-    { id: "billing", label: "Billing", icon: CreditCard },
     { id: "appearance", label: "Appearance", icon: Palette }
   ];
 
@@ -175,10 +166,6 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-primary text-primary-foreground">
-                        <Crown className="mr-1 h-3 w-3" />
-                        {settings.role}
-                      </Badge>
                       <span className="text-sm text-muted-foreground">
                         Member since {new Date(settings.joinDate).toLocaleDateString()}
                       </span>
@@ -317,7 +304,6 @@ export default function SettingsPage() {
                           className="w-full rounded-md border border-border bg-background px-3 py-2"
                         >
                           <option value="public">Public</option>
-                          <option value="friends">Friends Only</option>
                           <option value="private">Private</option>
                         </select>
                       </div>
@@ -346,77 +332,6 @@ export default function SettingsPage() {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">Allow Friend Requests</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Let other users send you friend requests
-                          </p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={settings.preferences.privacy.allowFriendRequests}
-                          onChange={(e) => setSettings(prev => ({
-                            ...prev,
-                            preferences: {
-                              ...prev.preferences,
-                              privacy: {
-                                ...prev.preferences.privacy,
-                                allowFriendRequests: e.target.checked
-                              }
-                            }
-                          }))}
-                          className="rounded border-border"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Billing Tab */}
-            {activeTab === "billing" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Billing & Subscription</CardTitle>
-                    <CardDescription>
-                      Manage your subscription and billing information
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between p-4 rounded-lg border">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Crown className="h-4 w-4 text-primary" />
-                          Premium {settings.subscriptionPlan}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Next billing: {new Date(settings.nextBillingDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Active
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Button variant="outline" className="w-full">
-                        Update Payment Method
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        View Billing History
-                      </Button>
-                      <Button variant="outline" className="w-full text-red-600 hover:text-red-700">
-                        Cancel Subscription
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

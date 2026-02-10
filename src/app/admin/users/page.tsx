@@ -17,7 +17,6 @@ import {
   Edit,
   Trash2,
   Shield,
-  Crown,
   User,
   Calendar,
   Mail,
@@ -50,8 +49,6 @@ interface User {
   name: string | null;
   email: string;
   role: string;
-  subscriptionStatus: string;
-  trialEndsAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count: {
@@ -72,15 +69,7 @@ interface Pagination {
 
 const roleColors = {
   FREE: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  PREMIUM: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   ADMIN: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-};
-
-const statusColors = {
-  TRIAL: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  INACTIVE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  CANCELLED: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
 };
 
 export default function AdminUsersPage() {
@@ -93,7 +82,6 @@ export default function AdminUsersPage() {
   // Filters
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,7 +116,6 @@ export default function AdminUsersPage() {
         limit: "20",
         ...(search && { search }),
         ...(roleFilter && { role: roleFilter }),
-        ...(statusFilter && { status: statusFilter }),
         sortBy,
         sortOrder
       });
@@ -152,7 +139,7 @@ export default function AdminUsersPage() {
     if (session) {
       fetchUsers();
     }
-  }, [session, currentPage, search, roleFilter, statusFilter, sortBy, sortOrder]);
+  }, [session, currentPage, search, roleFilter, sortBy, sortOrder]);
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -161,11 +148,6 @@ export default function AdminUsersPage() {
 
   const handleRoleFilter = (value: string) => {
     setRoleFilter(value === "all" ? "" : value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilter = (value: string) => {
-    setStatusFilter(value === "all" ? "" : value);
     setCurrentPage(1);
   };
 
@@ -251,8 +233,6 @@ export default function AdminUsersPage() {
     switch (role) {
       case 'ADMIN':
         return <Shield className="h-4 w-4" />;
-      case 'PREMIUM':
-        return <Crown className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }
@@ -281,7 +261,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">User Management</h1>
-                <p className="text-sm text-muted-foreground">Manage users, roles, and subscriptions</p>
+                <p className="text-sm text-muted-foreground">Manage users and roles</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -336,25 +316,8 @@ export default function AdminUsersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All roles</SelectItem>
-                    <SelectItem value="FREE">Free</SelectItem>
-                    <SelectItem value="PREMIUM">Premium</SelectItem>
+                    <SelectItem value="FREE">Player</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={statusFilter || "all"} onValueChange={handleStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="TRIAL">Trial</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -387,7 +350,7 @@ export default function AdminUsersPage() {
           <CardHeader>
             <CardTitle>Users ({pagination?.totalCount || 0})</CardTitle>
             <CardDescription>
-              Manage user accounts, roles, and subscription status
+              Manage user accounts and roles
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -409,10 +372,9 @@ export default function AdminUsersPage() {
                       className="rounded border-gray-300"
                     />
                   </div>
-                  <div className="col-span-2">User</div>
+                  <div className="col-span-3">User</div>
                   <div className="col-span-2">Role</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-2">Activity</div>
+                  <div className="col-span-3">Activity</div>
                   <div className="col-span-2">Joined</div>
                   <div className="col-span-1">Actions</div>
                 </div>
@@ -437,7 +399,7 @@ export default function AdminUsersPage() {
                     </div>
 
                     {/* User Info */}
-                    <div className="col-span-2">
+                    <div className="col-span-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                           {getRoleIcon(user.role)}
@@ -457,24 +419,12 @@ export default function AdminUsersPage() {
                     {/* Role */}
                     <div className="col-span-2">
                       <Badge className={roleColors[user.role as keyof typeof roleColors]}>
-                        {user.role}
+                        {user.role === 'FREE' ? 'Player' : user.role}
                       </Badge>
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-span-2">
-                      <Badge className={statusColors[user.subscriptionStatus as keyof typeof statusColors]}>
-                        {user.subscriptionStatus}
-                      </Badge>
-                      {user.trialEndsAt && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Trial until {formatDate(user.trialEndsAt)}
-                        </p>
-                      )}
                     </div>
 
                     {/* Activity */}
-                    <div className="col-span-2">
+                    <div className="col-span-3">
                       <div className="text-sm">
                         <p>Puzzles: {user._count.progress}</p>
                         <p>Rooms: {user._count.hostedRooms}</p>
@@ -503,13 +453,9 @@ export default function AdminUsersPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleUpdateUser(user.id, { role: 'PREMIUM' })}>
-                            <Crown className="h-4 w-4 mr-2" />
-                            Make Premium
-                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleUpdateUser(user.id, { role: 'FREE' })}>
                             <User className="h-4 w-4 mr-2" />
-                            Make Free
+                            Make Player
                           </DropdownMenuItem>
                           {isCurrentUserSuperAdmin && (
                             <DropdownMenuItem onClick={() => handleUpdateUser(user.id, { role: 'ADMIN' })}>

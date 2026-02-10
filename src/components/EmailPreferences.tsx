@@ -17,7 +17,6 @@ interface EmailPreferences {
   frequency: 'immediate' | 'daily' | 'weekly';
   achievements: boolean;
   leaderboards: boolean;
-  social: boolean;
   security: boolean;
 }
 
@@ -29,7 +28,6 @@ export default function EmailPreferences() {
     frequency: 'immediate',
     achievements: true,
     leaderboards: true,
-    social: true,
     security: true
   });
   const [loading, setLoading] = useState(false);
@@ -201,20 +199,6 @@ export default function EmailPreferences() {
                 id="leaderboards"
                 checked={preferences.leaderboards}
                 onCheckedChange={(checked) => updatePreference('leaderboards', checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="social">Social Activities</Label>
-                <p className="text-sm text-muted-foreground">
-                  Notifications about friend activities and challenges
-                </p>
-              </div>
-              <Switch
-                id="social"
-                checked={preferences.social}
-                onCheckedChange={(checked) => updatePreference('social', checked)}
               />
             </div>
 

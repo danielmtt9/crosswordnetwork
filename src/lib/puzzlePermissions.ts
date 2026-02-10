@@ -1,4 +1,4 @@
-import { UserRole, SubscriptionStatus } from '@/components/RoleIndicator';
+export type UserRole = 'PLAYER' | 'HOST' | 'MODERATOR' | 'SPECTATOR';
 
 export interface PuzzlePermission {
   canEdit: boolean;
@@ -18,8 +18,6 @@ export interface PuzzlePermission {
 
 export interface UserContext {
   role: UserRole;
-  subscriptionStatus?: SubscriptionStatus;
-  isPremium: boolean;
   isHost: boolean;
   isModerator: boolean;
   isOnline: boolean;
@@ -55,7 +53,6 @@ export interface PuzzleContext {
   maxHints: number;
   hintsUsed: number;
   canCollaborate: boolean;
-  requiresPremium: boolean;
 }
 
 /**
@@ -135,9 +132,6 @@ function canViewPuzzle(
   // Everyone can view if they're in the room
   if (!userContext.hasJoined) return false;
   
-  // Check if puzzle requires premium and user doesn't have it
-  if (puzzleContext.requiresPremium && !userContext.isPremium) return false;
-  
   return true;
 }
 
@@ -189,12 +183,7 @@ function canUseHints(
   // Check hint limits
   if (puzzleContext.hintsUsed >= puzzleContext.maxHints) return false;
   
-  // Premium users get more hints
-  if (userContext.isPremium) return true;
-  
-  // Free users have limited hints
-  const freeUserHintLimit = Math.floor(puzzleContext.maxHints * 0.5);
-  return puzzleContext.hintsUsed < freeUserHintLimit;
+  return puzzleContext.hintsUsed < puzzleContext.maxHints;
 }
 
 /**
@@ -239,10 +228,6 @@ function canSharePuzzle(
   // Must be able to view
   if (!canViewPuzzle(userContext, roomContext, puzzleContext)) return false;
   
-  // Premium users can share
-  if (userContext.isPremium) return true;
-  
-  // Free users can only share if puzzle is public
   return puzzleContext.isPublic;
 }
 
@@ -257,10 +242,6 @@ function canExportPuzzle(
   // Must be able to view
   if (!canViewPuzzle(userContext, roomContext, puzzleContext)) return false;
   
-  // Premium users can export
-  if (userContext.isPremium) return true;
-  
-  // Free users can only export if puzzle is public
   return puzzleContext.isPublic;
 }
 
@@ -380,17 +361,11 @@ export function getPermissionError(
       if (puzzleContext.isLocked && !userContext.isHost) {
         return 'This puzzle is currently locked.';
       }
-      if (puzzleContext.requiresPremium && !userContext.isPremium) {
-        return 'This puzzle requires a premium subscription.';
-      }
       return 'You do not have permission to view this puzzle.';
       
     case 'canHint':
       if (puzzleContext.hintsUsed >= puzzleContext.maxHints) {
         return 'No more hints available.';
-      }
-      if (!userContext.isPremium && puzzleContext.hintsUsed >= Math.floor(puzzleContext.maxHints * 0.5)) {
-        return 'Free users have limited hints. Upgrade to premium for unlimited hints.';
       }
       return 'You do not have permission to use hints.';
       
@@ -401,15 +376,9 @@ export function getPermissionError(
       return 'Only hosts can reset the puzzle.';
       
     case 'canShare':
-      if (!userContext.isPremium && !puzzleContext.isPublic) {
-        return 'Premium subscription required to share private puzzles.';
-      }
       return 'You do not have permission to share this puzzle.';
       
     case 'canExport':
-      if (!userContext.isPremium && !puzzleContext.isPublic) {
-        return 'Premium subscription required to export private puzzles.';
-      }
       return 'You do not have permission to export this puzzle.';
       
     case 'canModerate':

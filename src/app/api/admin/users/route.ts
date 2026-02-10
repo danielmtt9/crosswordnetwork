@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/superAdmin";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -26,14 +27,13 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const search = searchParams.get('search') || '';
     const role = searchParams.get('role') || '';
-    const status = searchParams.get('status') || '';
     const sortBy = searchParams.get('sortBy') || 'createdAt';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {};
+    // Build where clause with proper Prisma types
+    const where: Prisma.UserWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -46,13 +46,17 @@ export async function GET(request: NextRequest) {
       where.role = role;
     }
 
-    if (status) {
-      where.subscriptionStatus = status;
+    // Build orderBy clause with proper Prisma types
+    // Validate sortBy is a valid field
+    const validSortFields = ['createdAt', 'updatedAt', 'name', 'email', 'role'] as const;
+    const validSortOrder = sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : 'desc';
+    
+    const orderBy: Prisma.UserOrderByWithRelationInput = {};
+    if (validSortFields.includes(sortBy as typeof validSortFields[number])) {
+      orderBy[sortBy as typeof validSortFields[number]] = validSortOrder;
+    } else {
+      orderBy.createdAt = 'desc'; // Default fallback
     }
-
-    // Build orderBy clause
-    const orderBy: any = {};
-    orderBy[sortBy] = sortOrder;
 
     // Get users with pagination
     const [users, totalCount] = await Promise.all([
@@ -63,8 +67,6 @@ export async function GET(request: NextRequest) {
           name: true,
           email: true,
           role: true,
-          subscriptionStatus: true,
-          trialEndsAt: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -111,7 +113,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -136,13 +138,16 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Validate updates
-    const allowedUpdates = ['role', 'subscriptionStatus', 'trialEndsAt'];
-    const updateData: any = {};
+    // Validate updates with proper Prisma types
+    const allowedUpdates = ['role'] as const;
+    const updateData: Prisma.UserUpdateInput = {};
 
     for (const [key, value] of Object.entries(updates)) {
-      if (allowedUpdates.includes(key)) {
-        updateData[key] = value;
+      if (allowedUpdates.includes(key as typeof allowedUpdates[number])) {
+        // Type-safe assignment
+        if (key === 'role') {
+          updateData.role = value as string;
+        }
       }
     }
 
@@ -162,8 +167,6 @@ export async function PATCH(request: NextRequest) {
         name: true,
         email: true,
         role: true,
-        subscriptionStatus: true,
-        trialEndsAt: true,
         updatedAt: true
       }
     });
@@ -198,7 +201,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

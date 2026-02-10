@@ -73,3 +73,4 @@ Replace `<password>` with a secure password for the super admin account.
 2. Navigate to `/admin` to access the admin dashboard
 3. Use the "Manage Users" section to promote users to admin role
 4. Regular admins will see restricted options when trying to modify the super admin account
+# crosswordnetworkfree

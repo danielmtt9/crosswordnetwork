@@ -1,0 +1,34 @@
+{
+"workflow_version": "1.2.0",
+"timestamps": {"started": "2026-01-28T11:06:39.249Z", "last_updated": "2026-01-28T11:30:00.000Z", "completed": "2026-01-28T11:30:00.000Z"},
+"mode": "initial_scan",
+"scan_level": "deep",
+"project_root": "/home/danielaroko/applications/crosswordnetwork",
+"output_folder": "/home/danielaroko/applications/crosswordnetwork/docs",
+"completed_steps": [
+  {"step": "step_1", "status": "completed", "summary": "Classified as Monolith"},
+  {"step": "step_2", "status": "completed", "summary": "Found existing docs"},
+  {"step": "step_3", "status": "completed", "summary": "Tech stack analyzed"},
+  {"step": "step_4", "status": "completed", "summary": "Detailed scans complete"},
+  {"step": "step_5", "status": "completed", "summary": "Source tree documented"},
+  {"step": "step_6", "status": "completed", "summary": "Guides written"},
+  {"step": "step_8", "status": "completed", "summary": "Architecture written"},
+  {"step": "step_9", "status": "completed", "summary": "Overview written"},
+  {"step": "step_10", "status": "completed", "summary": "Index generated"},
+  {"step": "step_12", "status": "completed", "summary": "Workflow complete"}
+],
+"current_step": "completed",
+"findings": {},
+"outputs_generated": [
+  "project-scan-report.json",
+  "api-contracts-web.md",
+  "data-models-web.md",
+  "component-inventory-web.md",
+  "source-tree-analysis.md",
+  "development-guide.md",
+  "deployment-guide.md",
+  "architecture-web.md",
+  "project-overview.md",
+  "index.md"
+]
+}

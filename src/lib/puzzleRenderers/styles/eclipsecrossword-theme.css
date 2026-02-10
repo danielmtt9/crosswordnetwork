@@ -2,26 +2,33 @@
 
 /* ===== CSS Variables for Theme Compatibility ===== */
 :root {
-  /* Light mode colors */
-  --ecw-background: hsl(0 0% 100%);
-  --ecw-foreground: hsl(222.2 84% 4.9%);
-  --ecw-card: hsl(0 0% 100%);
-  --ecw-card-foreground: hsl(222.2 84% 4.9%);
-  --ecw-border: hsl(214.3 31.8% 91.4%);
-  --ecw-primary: hsl(142.1 76.2% 36.3%); /* Green instead of blue */
-  --ecw-primary-foreground: hsl(355.7 100% 97.3%);
-  --ecw-secondary: hsl(210 40% 96.1%);
-  --ecw-secondary-foreground: hsl(222.2 84% 4.9%);
-  --ecw-accent: hsl(142.1 70.6% 95.3%); /* Light green accent */
-  --ecw-accent-foreground: hsl(222.2 84% 4.9%);
-  --ecw-muted: hsl(210 40% 96.1%);
-  --ecw-muted-foreground: hsl(215.4 16.3% 46.9%);
-  --ecw-destructive: hsl(0 84.2% 60.2%);
-  --ecw-destructive-foreground: hsl(210 40% 98%);
-  --ecw-success: hsl(142.1 76.2% 36.3%);
-  --ecw-success-foreground: hsl(355.7 100% 97.3%);
-  --ecw-warning: hsl(38 92% 50%);
-  --ecw-warning-foreground: hsl(222.2 84% 4.9%);
+  /* Light mode colors (derived from site tokens when available) */
+  --ecw-background: var(--cw-surface, #F6F7F5);
+  --ecw-foreground: var(--cw-text, #0E1512);
+  --ecw-card: var(--cw-card, #FFFFFF);
+  --ecw-card-foreground: var(--cw-text, #0E1512);
+  --ecw-border: var(--cw-border, #E5E8E2);
+  --ecw-primary: var(--cw-accent, #d97706);
+  --ecw-primary-foreground: #fffbeb;
+  --ecw-secondary: color-mix(in srgb, var(--ecw-card) 88%, var(--ecw-border) 12%);
+  --ecw-secondary-foreground: var(--ecw-foreground);
+  --ecw-accent: var(--cw-highlight-across, rgba(217, 119, 6, 0.18));
+  --ecw-accent-foreground: var(--ecw-foreground);
+  --ecw-muted: var(--cw-muted, #EEF1ED);
+  --ecw-muted-foreground: var(--cw-muted-foreground, #5F6E66);
+  --ecw-destructive: #B42318;
+  --ecw-destructive-foreground: #fff;
+  --ecw-success: var(--ecw-primary);
+  --ecw-success-foreground: var(--ecw-primary-foreground);
+  --ecw-warning: #F59E0B;
+  --ecw-warning-foreground: var(--ecw-foreground);
+
+  /* Readability tuning: separate surface vs grid vs cell tokens */
+  --ecw-surface: var(--cw-surface, #F6F7F5);
+  --ecw-grid-surface: color-mix(in srgb, var(--cw-card, #FFFFFF) 92%, var(--cw-border, #E5E8E2) 8%);
+  --ecw-cell-bg: color-mix(in srgb, var(--cw-card, #FFFFFF) 96%, var(--cw-surface, #F6F7F5) 4%);
+  --ecw-cell-fg: var(--cw-text, #0E1512);
+  --ecw-cell-border: color-mix(in srgb, var(--cw-border, #E5E8E2) 70%, var(--cw-text, #0E1512) 30%);
   
   /* Typography */
   --ecw-font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -43,25 +50,32 @@
 /* Dark mode colors */
 @media (prefers-color-scheme: dark) {
   :root {
-    --ecw-background: hsl(222.2 84% 4.9%);
-    --ecw-foreground: hsl(210 40% 98%);
-    --ecw-card: hsl(222.2 84% 4.9%);
-    --ecw-card-foreground: hsl(210 40% 98%);
-    --ecw-border: hsl(217.2 32.6% 17.5%);
-    --ecw-primary: hsl(142.1 70.6% 45.3%); /* Brighter green for dark mode */
-    --ecw-primary-foreground: hsl(222.2 84% 4.9%);
-    --ecw-secondary: hsl(217.2 32.6% 17.5%);
-    --ecw-secondary-foreground: hsl(210 40% 98%);
-    --ecw-accent: hsl(142.1 70.6% 15.3%); /* Dark green accent for dark mode */
-    --ecw-accent-foreground: hsl(210 40% 98%);
-    --ecw-muted: hsl(217.2 32.6% 17.5%);
-    --ecw-muted-foreground: hsl(215 20.2% 65.1%);
-    --ecw-destructive: hsl(0 62.8% 30.6%);
-    --ecw-destructive-foreground: hsl(210 40% 98%);
-    --ecw-success: hsl(142.1 70.6% 45.3%);
-    --ecw-success-foreground: hsl(144.9 80.4% 10%);
-    --ecw-warning: hsl(38 92% 50%);
-    --ecw-warning-foreground: hsl(222.2 84% 4.9%);
+    --ecw-background: var(--cw-surface, #0B0F0D);
+    --ecw-foreground: var(--cw-text, #E6ECE8);
+    --ecw-card: var(--cw-card, #10161C);
+    --ecw-card-foreground: var(--cw-text, #E6ECE8);
+    --ecw-border: var(--cw-border, #1A211D);
+    --ecw-primary: var(--cw-accent, #d97706);
+    --ecw-primary-foreground: #fffbeb;
+    --ecw-secondary: color-mix(in srgb, var(--ecw-card) 90%, var(--ecw-border) 10%);
+    --ecw-secondary-foreground: var(--ecw-foreground);
+    --ecw-accent: var(--cw-highlight-across, rgba(217, 119, 6, 0.25));
+    --ecw-accent-foreground: var(--ecw-foreground);
+    --ecw-muted: var(--cw-muted, #111A14);
+    --ecw-muted-foreground: var(--cw-muted-foreground, #9DB0A8);
+    --ecw-destructive: #F97066;
+    --ecw-destructive-foreground: #0B0F0D;
+    --ecw-success: var(--ecw-primary);
+    --ecw-success-foreground: var(--ecw-primary-foreground);
+    --ecw-warning: #F59E0B;
+    --ecw-warning-foreground: var(--ecw-foreground);
+
+    /* Dark-mode readability lift (still subtle) */
+    --ecw-surface: var(--cw-surface, #0B0F0D);
+    --ecw-grid-surface: color-mix(in srgb, var(--cw-card, #10161C) 88%, var(--cw-border, #1A211D) 12%);
+    --ecw-cell-bg: color-mix(in srgb, var(--cw-card, #10161C) 88%, white 12%);
+    --ecw-cell-fg: var(--cw-text, #E6ECE8);
+    --ecw-cell-border: color-mix(in srgb, var(--cw-border, #1A211D) 55%, white 45%);
   }
 }
 
@@ -70,10 +84,18 @@
 /* Body and typography */
 body {
   font-family: var(--ecw-font-family) !important;
-  background-color: var(--ecw-background) !important;
+  background-color: var(--ecw-surface) !important;
   color: var(--ecw-foreground) !important;
   font-size: 14px !important;
   line-height: 1.5 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* Ensure HTML element doesn't clip */
+html {
+  overflow: visible !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -84,14 +106,18 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ===== Crossword Container ===== */
 .ecw-crosswordarea {
-  background-color: var(--ecw-card) !important;
-  border: 2px solid var(--ecw-border) !important;
+  /* Subtle surface so the grid feels native (not a "page inside page"). */
+  background-color: var(--ecw-grid-surface) !important;
+  border: 0 !important;
   border-radius: var(--ecw-border-radius-lg) !important;
-  padding: 1rem !important;
+  padding: 0.75rem !important;
   font-family: var(--ecw-font-family) !important;
   font-size: 14px !important;
-  box-shadow: var(--ecw-shadow-md) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease !important;
+  overflow: visible !important;
+  width: fit-content !important;
+  margin: 0 auto !important;
 }
 
 /* Make crossword table responsive */
@@ -99,35 +125,51 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
   max-height: 100%;
   margin: 0 auto;
+  border-collapse: separate !important;
+  border-spacing: var(--ecw-grid-gap) !important;
+  padding: 8px !important;
+  background: transparent !important;
+  border-radius: calc(var(--ecw-border-radius-lg) - 2px) !important;
+}
+
+/* Table cell defaults: keep cells perfectly square and centered. */
+#crossword td {
+  padding: 0 !important;
+  vertical-align: middle !important;
 }
 
 .ecw-crosswordarea:hover {
-  box-shadow: var(--ecw-shadow-lg) !important;
+  box-shadow: none !important;
 }
 
 /* ===== Grid Cells ===== */
 .ecw-box {
-  border: 1px solid var(--ecw-border) !important;
-  background-color: var(--ecw-background) !important;
-  color: var(--ecw-foreground) !important;
+  border: 1px solid var(--ecw-cell-border) !important;
+  background-color: var(--ecw-cell-bg) !important;
+  color: var(--ecw-cell-fg) !important;
   font-family: var(--ecw-font-mono) !important;
   font-size: var(--ecw-cell-font-size) !important;
   font-weight: 700 !important;
+  line-height: 1 !important;
+  padding: 0 !important;
   text-align: center !important;
+  min-height: var(--ecw-cell-size) !important;
+  min-width: var(--ecw-cell-size) !important;
   height: var(--ecw-cell-size) !important;
   width: var(--ecw-cell-size) !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
   border-radius: 2px !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   box-sizing: border-box !important;
+  /* Keep table semantics (this is a <td>). Using flex here can distort the grid. */
 }
 
 /* Normal state - unselected */
 .ecw-boxnormal_unsel {
-  background-color: var(--ecw-background) !important;
-  border-color: var(--ecw-border) !important;
-  color: var(--ecw-foreground) !important;
+  background-color: var(--ecw-cell-bg) !important;
+  border-color: var(--ecw-cell-border) !important;
+  color: var(--ecw-cell-fg) !important;
 }
 
 .ecw-boxnormal_unsel:hover {
@@ -139,8 +181,11 @@ h1, h2, h3, h4, h5, h6 {
 .ecw-boxnormal_sel {
   background-color: var(--ecw-accent) !important;
   border-color: var(--ecw-primary) !important;
-  color: var(--ecw-foreground) !important;
-  box-shadow: 0 0 0 2px var(--ecw-primary) !important;
+  color: var(--ecw-cell-fg) !important;
+  /* Premium amber glow: crisp edge + soft halo */
+  box-shadow:
+    0 0 0 2px var(--cw-focus-ring, var(--ecw-primary)),
+    0 0 0 6px color-mix(in srgb, var(--cw-focus-ring, var(--ecw-primary)) 20%, transparent) !important;
 }
 
 /* Error state - unselected */
@@ -247,7 +292,7 @@ h1, h2, h3, h4, h5, h6 {
 .ecw-input:focus {
   outline: none !important;
   border-color: var(--ecw-primary) !important;
-  box-shadow: 0 0 0 2px hsl(142.1 76.2% 36.3% / 0.2) !important;
+  box-shadow: 0 0 0 2px hsl(32 95% 44% / 0.2) !important;
 }
 
 .ecw-input::placeholder {
@@ -274,7 +319,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .ecw-button:hover {
-  background-color: hsl(142.1 76.2% 36.3% / 0.9) !important;
+  background-color: hsl(32 95% 44% / 0.9) !important;
   transform: translateY(-1px) !important;
   box-shadow: var(--ecw-shadow) !important;
 }
@@ -313,12 +358,6 @@ h1, h2, h3, h4, h5, h6 {
   .ecw-answerbox {
     width: 100% !important;
     max-width: 320px !important;
-  }
-  
-  .ecw-box {
-    height: calc(var(--ecw-cell-size) * 0.8) !important;
-    width: calc(var(--ecw-cell-size) * 0.8) !important;
-    font-size: calc(var(--ecw-cell-font-size) * 0.8) !important;
   }
   
   .ecw-crosswordarea {
@@ -376,9 +415,9 @@ h1, h2, h3, h4, h5, h6 {
     border-color: var(--ecw-border);
   }
   50% { 
-    background-color: rgba(34, 197, 94, 0.2); 
-    border-color: rgb(34, 197, 94);
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    background-color: hsl(32 95% 44% / 0.2); 
+    border-color: var(--ecw-primary);
+    box-shadow: 0 0 8px hsl(32 95% 44% / 0.4);
   }
 }
 
@@ -407,6 +446,89 @@ h1, h2, h3, h4, h5, h6 {
 /* Struggling indicator (3+ errors) */
 .ecw-cell-struggling {
   border-left: 3px solid rgb(251, 191, 36) !important;
+}
+
+/* ===== Animation Utility Classes ===== */
+
+/* Fade in animation utility */
+.ecw-animate-fadeIn {
+  animation: ecw-fadeIn 0.3s ease-out;
+}
+
+/* Correct letter animation utility */
+.ecw-animate-correct {
+  animation: pulse-correct 0.6s ease-in-out;
+}
+
+/* Incorrect letter animation utility */
+.ecw-animate-incorrect {
+  animation: shake-incorrect 0.4s ease-in-out, glow-border 0.4s ease-in-out;
+}
+
+/* Cell glow animation for active cells */
+@keyframes cell-glow {
+  0%, 100% { box-shadow: 0 0 0 2px var(--ecw-primary); }
+  50% { box-shadow: 0 0 8px 2px var(--ecw-primary); }
+}
+
+.ecw-animate-glow {
+  animation: cell-glow 1s ease-in-out infinite;
+}
+
+/* Completion celebration */
+@keyframes celebrate {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.05) rotate(2deg); }
+  75% { transform: scale(1.05) rotate(-2deg); }
+}
+
+.ecw-animate-celebrate {
+  animation: celebrate 0.5s ease-in-out;
+}
+
+/* Hint reveal animation */
+@keyframes hint-reveal {
+  0% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: hsl(32 95% 44% / 0.3);
+    transform: scale(1.1);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+
+.ecw-animate-hint {
+  animation: hint-reveal 0.8s ease-in-out;
+}
+
+/* Disable all animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ecw-animate-fadeIn,
+  .ecw-animate-correct,
+  .ecw-animate-incorrect,
+  .ecw-animate-glow,
+  .ecw-animate-celebrate,
+  .ecw-animate-hint,
+  .ecw-letter-correct,
+  .ecw-letter-incorrect {
+    animation: none !important;
+  }
+  
+  /* For reduced motion, use simple state changes instead */
+  .ecw-animate-correct {
+    background-color: hsl(32 95% 44% / 0.15) !important;
+    transition: background-color 0.2s ease;
+  }
+  
+  .ecw-animate-incorrect {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    transition: background-color 0.2s ease;
+  }
 }
 
 /* ===== Print Styles ===== */

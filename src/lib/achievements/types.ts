@@ -17,8 +17,6 @@ export type AchievementTier =
 export type AchievementEventType = 
   | 'puzzle_completed'
   | 'daily_activity'
-  | 'multiplayer_join'
-  | 'multiplayer_host'
   | 'streak_milestone'
   | 'accuracy_milestone'
   | 'speed_milestone';
@@ -110,16 +108,6 @@ export interface DifficultyCountRequirement extends AchievementRequirement {
   meta: {
     difficulty: string;
   };
-}
-
-export interface MultiplayerRequirement extends AchievementRequirement {
-  type: 'multiplayer_join' | 'multiplayer_host';
-  threshold: number; // number of times
-}
-
-export interface SocialRequirement extends AchievementRequirement {
-  type: 'friend_count' | 'room_created' | 'room_joined';
-  threshold: number;
 }
 
 // Achievement metadata

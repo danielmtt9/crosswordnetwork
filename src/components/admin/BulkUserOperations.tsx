@@ -29,7 +29,6 @@ import {
   XCircle,
   Loader2,
   Shield,
-  Crown,
   User,
   Clock,
   Ban,
@@ -70,8 +69,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
   // Form data for different actions
   const [formData, setFormData] = useState({
     role: "",
-    subscriptionStatus: "",
-    trialEndsAt: "",
     reason: "",
     expiresAt: ""
   });
@@ -106,18 +103,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
             return;
           }
           requestBody.data = { role: formData.role };
-          break;
-
-        case 'updateSubscriptionStatus':
-          if (!formData.subscriptionStatus) {
-            setError("Subscription status is required");
-            setLoading(false);
-            return;
-          }
-          requestBody.data = { 
-            subscriptionStatus: formData.subscriptionStatus,
-            ...(formData.trialEndsAt && { trialEndsAt: formData.trialEndsAt })
-          };
           break;
 
         case 'suspend':
@@ -179,8 +164,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
     setAction("");
     setFormData({
       role: "",
-      subscriptionStatus: "",
-      trialEndsAt: "",
       reason: "",
       expiresAt: ""
     });
@@ -192,8 +175,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
     switch (actionType) {
       case 'updateRole':
         return <Shield className="h-4 w-4" />;
-      case 'updateSubscriptionStatus':
-        return <Crown className="h-4 w-4" />;
       case 'suspend':
         return <Clock className="h-4 w-4" />;
       case 'unsuspend':
@@ -209,8 +190,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
     switch (actionType) {
       case 'updateRole':
         return 'text-blue-600';
-      case 'updateSubscriptionStatus':
-        return 'text-purple-600';
       case 'suspend':
         return 'text-yellow-600';
       case 'unsuspend':
@@ -260,12 +239,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
                       Update Role
                     </div>
                   </SelectItem>
-                  <SelectItem value="updateSubscriptionStatus">
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4" />
-                      Update Subscription Status
-                    </div>
-                  </SelectItem>
                   <SelectItem value="suspend">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
@@ -299,35 +272,10 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="FREE">Free</SelectItem>
-                    <SelectItem value="PREMIUM">Premium</SelectItem>
+                    <SelectItem value="FREE">Player</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            )}
-
-            {action === 'updateSubscriptionStatus' && (
-              <div className="space-y-2">
-                <Label>Subscription Status</Label>
-                <Select value={formData.subscriptionStatus} onValueChange={(value) => setFormData({ ...formData, subscriptionStatus: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="TRIAL">Trial</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Label htmlFor="trialEndsAt">Trial Ends At (optional)</Label>
-                <Input
-                  id="trialEndsAt"
-                  type="date"
-                  value={formData.trialEndsAt}
-                  onChange={(e) => setFormData({ ...formData, trialEndsAt: e.target.value })}
-                />
               </div>
             )}
 
@@ -409,7 +357,6 @@ export function BulkUserOperations({ selectedUsers, onSuccess, isSuperAdmin }: B
                   {getActionIcon(action)}
                   <span className="ml-2">
                     {action === 'updateRole' ? 'Update Roles' :
-                     action === 'updateSubscriptionStatus' ? 'Update Subscriptions' :
                      action === 'suspend' ? 'Suspend Users' :
                      action === 'unsuspend' ? 'Unsuspend Users' :
                      action === 'delete' ? 'Delete Users' :
