@@ -2,6 +2,12 @@
 
 # dependencies
 /node_modules
+.agent/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/agents/
 /.pnp
 .pnp.*
 .yarn/*
@@ -29,9 +35,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+playwright-report/
+test-results/
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# secrets / credentials
+client_secret_*.json
 
 # vercel
 .vercel
@@ -42,6 +54,7 @@ next-env.d.ts
 
 # temp directories
 crossword-network-temp/
+deploy-package/
 
 # IDE
 .vscode/
